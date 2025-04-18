@@ -1,0 +1,137 @@
+[
+  {
+    "super_category": "Green",
+    "super_definition": "Code posts as Green if they refer in a neutral or positive light to:\n\nEnvironmental topics such as climate change, environment, nature, or sustainability\nrecycling and waste management (as defined below)\ngreenhouse gas emissions reductions (as defined below)\nlow-carbon technologies (as defined below)\nfalse solutions (as defined below). \n",
+    "short_category": "Emission reduction",
+    "multiline_category": "Emission\nreduction",
+    "sub_categories": [
+      {
+        "category": "Decreasing emissions",
+        "definition": "The company claims to be working (or to have worked or pledges to work) to decrease the greenhouse gas emissions (or “carbon footprint”) associated with its operations and/or products, either in absolute or relative terms (such as “carbon intensity”) and often in reference to a purported ambition by the company to reach net-zero emissions. These claims can be with or without reference to specific technology.\n",
+        "examples": "General\nhttps://www.junkipedia.org/posts/230420944\nhttps://www.junkipedia.org/posts/228233715\nhttps://www.junkipedia.org/posts/229949420\nhttps://www.junkipedia.org/posts/228138876\nhttps://www.junkipedia.org/posts/227773911\nhttps://www.junkipedia.org/posts/139425536\n“Net zero”\nhttps://www.junkipedia.org/posts/136098837\nhttps://www.junkipedia.org/posts/137721262\nhttps://www.junkipedia.org/posts/227499761\nhttps://www.junkipedia.org/posts/131454278\nhttps://www.junkipedia.org/posts/129267574\nhttps://www.junkipedia.org/posts/140018414\nhttps://www.junkipedia.org/posts/231374421\n",
+        "counter_examples": null,
+        "label": "emissions_reduction"
+      }
+    ]
+  },
+  {
+    "super_category": "Green",
+    "super_definition": "Code posts as Green if they refer in a neutral or positive light to:\n\nEnvironmental topics such as climate change, environment, nature, or sustainability\nrecycling and waste management (as defined below)\ngreenhouse gas emissions reductions (as defined below)\nlow-carbon technologies (as defined below)\nfalse solutions (as defined below). \n",
+    "short_category": "Low-carbon technologies",
+    "multiline_category": "Low-carbon\ntechnologies",
+    "sub_categories": [
+      {
+        "category": "Low-carbon technologies (aka “Renewable energy”)",
+        "definition": "The company claims to be investing in (or to have invested in or to have plans to invest in) or to be otherwise working (or to have worked or to have plans to work) to develop and/or deploy low-carbon technologies. The claims present the company as a critical player in the transition to low-carbon technologies. Posts should only be categorized if they discuss renewables in a neutral or positive light; negative sentiments towards renewables do not count.\n\nWe define low-carbon technologies to include:\n\n“renewable energy” (also “low-carbon electricity”, “clean energy”, “green energy”, and other general references to low-carbon technologies that do not mention specific technologies)\nsolar energy\nwind energy\nmarine energy\nHydropower\ngeothermal energy\nnuclear energy\nbattery electric vehicles (and associated charging infrastructure)\nplug-in hybrid vehicles\nrenewable energy storage\nrenewable energy transmission\n\nWe define low-carbon technologies to exclude all ‘false’ solutions (as also defined below) as well as all fossil fuels (not just those portrayed as environmentally beneficial):\n\ncarbon capture and storage (CCS)\ncarbon capture, utilization, and storage (CCUS)\nbioenergy (including biofuels for transportation, sometimes referred to as “renewable fuels” or “sustainable fuels”, and biomass for heat and electricity generation)\nhydrogen energy (for transportation or electricity generation)\nall fossil fuels\nemissions offset/credit schemes\nenergy efficiency\nfuel cell vehicles\nsustainable aviation fuels (SAFs)\nfuel-based solutions that depend on clean energy (for example, hydrogen made from renewables)\n",
+        "examples": "“renewable energy” (also “low-carbon electricity”, “clean energy”, “green energy”, and other general references to low-carbon technologies that do not mention specific technologies)\nhttps://www.junkipedia.org/posts/131985961\nhttps://www.junkipedia.org/posts/131619629\nhttps://www.junkipedia.org/posts/140198972\nhttps://www.junkipedia.org/posts/139425536\nhttps://www.junkipedia.org/posts/136098837\nhttps://www.junkipedia.org/posts/135274192\nhttps://www.junkipedia.org/posts/134374679\nhttps://www.junkipedia.org/posts/134128911\nhttps://www.junkipedia.org/posts/133500329\nSolar energy\nhttps://www.junkipedia.org/posts/40833644\nhttps://www.junkipedia.org/posts/140115832\nhttps://www.junkipedia.org/posts/139613010\nhttps://www.junkipedia.org/posts/139351639\nhttps://www.junkipedia.org/posts/139295763\nhttps://www.junkipedia.org/posts/137721262\nhttps://www.junkipedia.org/posts/131619629\nhttps://www.junkipedia.org/posts/131619629\nWind energy\nhttps://www.junkipedia.org/posts/42274396\nhttps://www.junkipedia.org/posts/140115832\nhttps://www.junkipedia.org/posts/131619629\nhttps://www.junkipedia.org/posts/139638119\nhttps://www.junkipedia.org/posts/131718704\nhttps://www.junkipedia.org/posts/131619629\nhttps://www.junkipedia.org/posts/131576846\nMarine energy\nHydropower\nGeothermal energy\nNuclear energy\nBattery electric vehicles (and associated charging infrastructure)\nhttps://www.junkipedia.org/posts/136965728\nhttps://www.junkipedia.org/posts/128306125\nhttps://www.junkipedia.org/posts/140502184\nhttps://www.junkipedia.org/posts/193381947\nPlug-in hybrid vehicles\nRenewable energy storage\nhttps://www.junkipedia.org/posts/136098837\nhttps://www.junkipedia.org/posts/131009609\nRenewable energy transmission\n",
+        "counter_examples": null,
+        "label": "renewable_energy"
+      }
+    ]
+  },
+  {
+    "super_category": "Green",
+    "super_definition": "Code posts as Green if they refer in a neutral or positive light to:\n\nEnvironmental topics such as climate change, environment, nature, or sustainability\nrecycling and waste management (as defined below)\ngreenhouse gas emissions reductions (as defined below)\nlow-carbon technologies (as defined below)\nfalse solutions (as defined below). \n",
+    "short_category": "False solutions",
+    "multiline_category": "False solutions",
+    "sub_categories": [
+      {
+        "category": "False solutions (aka “Fuel or fuel-adjacent technologies”)",
+        "definition": "The company claims to be investing in (or to have invested in or to have plans to invest in) or to be otherwise working (or to have worked or to have plans to work) to develop and/or deploy ‘false’ solutions. Only categorize posts if they position the technologies listed below as:\n\nsolutions to mitigating climate change (including implying that any of the technologies below are reducing emissions, are low-carbon, or are sustainable)\nreducing emissions\notherwise achieving a low-carbon reality or future\n\nWe define false solutions to include:\n\ncarbon capture and storage (CCS)\ncarbon capture, utilization, and storage (CCUS)\nbioenergy (including biofuels for transportation, sometimes referred to as “renewable fuels” or “sustainable fuels”, and biomass for heat and electricity generation)\nhydrogen energy (for transportation or electricity generation)\nfossil fuels portrayed as environmentally beneficial (including “clean coal”, “clean” or “cleaner” natural gas, and “sustainable” gasoline)\nemissions offset/credit schemes\nenergy efficiency\nfuel cell vehicles\nsustainable aviation fuels (SAFs)\nfuel-based solutions that depend on clean energy (for example, hydrogen made from renewables)\n\nWe define false solutions to exclude all low-carbon technologies (as also defined above):\n\n“renewable energy” (also “low-carbon electricity”, “clean energy”, “green energy”, and other general references to low-carbon technologies that do not mention specific technologies)\nsolar energy\nwind energy\nmarine energy\nHydropower\ngeothermal energy\nnuclear energy\nbattery electric vehicles (and associated charging infrastructure)\nplug-in hybrid vehicles\nrenewable energy storage\nrenewable energy transmission\n",
+        "examples": "Carbon capture and storage (CCS)\nhttps://www.junkipedia.org/posts/139404967\nhttps://www.junkipedia.org/posts/140018414\nhttps://www.junkipedia.org/posts/139277377\nhttps://www.junkipedia.org/posts/134764668\nhttps://www.junkipedia.org/posts/135274003\nhttps://www.junkipedia.org/posts/132300314\nCarbon capture, utilization, and storage (CCUS)\nhttps://www.junkipedia.org/posts/139425536\nhttps://www.junkipedia.org/posts/134374679\nBioenergy (including biofuels for transportation, sometimes referred to as “renewable fuels”, and biomass for heat and electricity generation)\nhttps://www.junkipedia.org/posts/136098837\nhttps://www.junkipedia.org/posts/134479142\nhttps://www.junkipedia.org/posts/134387063\nhttps://www.junkipedia.org/posts/128306125\nhttps://www.junkipedia.org/posts/229949420\nhttps://www.junkipedia.org/posts/138989972\nHydrogen energy (for transportation or electricity generation)\nhttps://www.junkipedia.org/posts/139425536\nhttps://www.junkipedia.org/posts/136098837\nhttps://www.junkipedia.org/posts/128306125\nhttps://www.junkipedia.org/posts/139263186\nhttps://www.junkipedia.org/posts/134722324\nhttps://www.junkipedia.org/posts/131454278\nFossil fuels portrayed as environmentally beneficial (including “clean coal”, “clean” or “cleaner” natural gas, and “sustainable” gasoline)\nhttps://www.junkipedia.org/posts/137749108\nhttps://www.junkipedia.org/posts/139447498\nhttps://www.junkipedia.org/posts/138227170\nhttps://www.junkipedia.org/posts/136996852\nhttps://www.junkipedia.org/posts/140103553\nEmissions offset/credit schemes\nhttps://www.junkipedia.org/posts/139425536\nFuel cell vehicles\nSustainable aviation fuels (SAFs)\nhttps://www.junkipedia.org/posts/230054985\nhttps://www.junkipedia.org/posts/43119520\nhttps://www.junkipedia.org/posts/44558932\nhttps://www.junkipedia.org/posts/139969086\nEnergy efficiency\nhttps://www.junkipedia.org/posts/134374679\n",
+        "counter_examples": null,
+        "label": "false_solutions"
+      }
+    ]
+  },
+  {
+    "super_category": "Green",
+    "super_definition": "Code posts as Green if they refer in a neutral or positive light to:\n\nEnvironmental topics such as climate change, environment, nature, or sustainability\nrecycling and waste management (as defined below)\ngreenhouse gas emissions reductions (as defined below)\nlow-carbon technologies (as defined below)\nfalse solutions (as defined below). \n",
+    "short_category": "Recycling/waste management",
+    "multiline_category": "Recycling/waste\nmanagement",
+    "sub_categories": [
+      {
+        "category": "Recycling or waste management",
+        "definition": "The company claims to support, be investing in (or to have invested in or to have plans to invest in), or to be otherwise working (or to have worked or to have plans to work) to develop and/or deploy recycling or waste management solutions. \n\nWe define recycling or waste management solutions to include:\n\nRecycling\nwaste management\nreduced waste and landfills\nReduced usage/more reuse\ncircular economies\nreusable or sustainable plastics, polymers, and packaging\n",
+        "examples": "Tyler Baran and Tom Miller will present an overview of several mechanically recyclable, flexible packaging solutions for primary and secondary packaging. This is a short webinar providing a high-level overview of resin and package performance. https://t.co/DTw6OOjb7t https://t.co/poooCRDykt [148294587]\nMulti-material structures are difficult, if not impossible, to recycle with widely available mechanical processes. ExxonMobil has …[61940509]",
+        "counter_examples": null,
+        "label": "recycling"
+      }
+    ]
+  },
+  {
+    "super_category": "Green",
+    "super_definition": "Code posts as Green if they refer in a neutral or positive light to:\n\nEnvironmental topics such as climate change, environment, nature, or sustainability\nrecycling and waste management (as defined below)\ngreenhouse gas emissions reductions (as defined below)\nlow-carbon technologies (as defined below)\nfalse solutions (as defined below). \n",
+    "short_category": "Other green",
+    "multiline_category": "Other green",
+    "sub_categories": [
+      {
+        "category": "Other green",
+        "definition": "Any post labelled as Green but not fitting into any of the Green sub-category labels",
+        "examples": null,
+        "counter_examples": null,
+        "label": "green_message"
+      }
+    ]
+  },
+  {
+    "super_category": "Fossil",
+    "super_definition": "Code posts as Fossil Fuel if refer to:\n\nFossil fuel primary products (as defined below)\nPetrochemicals or Petrochemical Products (as defined below)\nFossil fuel infrastructure and production (as defined below)\n",
+    "short_category": "Fossil fuels",
+    "multiline_category": "Fossil fuels",
+    "sub_categories": [
+      {
+        "category": "Fossil fuel primary products",
+        "definition": "The company mentions fossil fuels or fossil fuel-based motor fuels, subject to the following conditions:\n\nInclude any explicitly named fossil fuel primary product regardless of environmental sentiment (i.e. regardless of whether fossil fuel primary products are portrayed as environmentally beneficial, harmful, or neutral). Thus, include “renewable diesel”, “clean natural gas”, “clean coal”, etc.\nReferences by fossil fuel companies to “fuels” should be assumed by default to be fossil fuel-based and thus labeled as Fossil fuel primary products. Thus, include “marine fuel”, “aviation fuel”, “sustainable fuel”, “renewable fuel”, “lower emission fuel”, etc. This also includes fossil fuel-based motor fuel product lines such as Synergy and Mobil 1. \nInclude references to companies as fossil fuel companies, oil and gas companies, etc.\nDo not include fossil fuel primary products that are implied but not named. For example, do not include carbon capture and storage or carbon offsetting unless their associated fossil fuel primary products are explicitly mentioned.\nAside from the fossil fuel-based motor fuels gasoline and diesel, do not include Petrochemicals or Petrochemical Products because they are not primary fossil fuel products.\n\nNote that Fossil fuel primary products and Fossil fuel infrastructure and production will often overlap, particularly when fossil fuels are mentioned in the context of infrastructure or production. These two categories are not mutually exclusive and should both be coded as needed. For example, “oil production” should be coded as both Fossil fuel primary products and Fossil fuel infrastructure and production.\n\nBut there is a distinction. If oil/gas/coal etc. is mentioned only in the context of the production or infrastructure of it, do not label it as 1 (primary product), unless mentioned elsewhere in the text standalone OR if the focus of the production statement is explicitly on the outcome of the production/infrastructure. Distinguish between process/doing/creating and the outcome.\n\nWe define fossil fuel primary products to include:\n\nfossil fuels \nCoal\nOil\nnatural gas (aka methane, liquified natural gas (LNG))\nfossil fuel-based motor fuels \nGasoline\nDiesel\n\nWe define fossil fuel primary products to exclude:\n\nBiofuels\nalgae oils\noil seed\nhydrogen fuel\n",
+        "examples": "What does premium fuel do? In the final episode our Esso scientists set out to answer this question… and some of the other … [61941163]\nExxonMobil's Tze San Koh explains how natural gas is supporting a brighter future. [10949598]\nDo you know a young woman, 35 or younger, who is excelling early in her #LNG career? Nominate her for our #PowerPlayAwards’ Rising Star Award: https://t.co/UOtOpIdevJ. #WomenInLNG https://t.co/Qf4hCNFRti [56874146]\nToday we announced our plans to join the Oil and Gas Climate Initiative, a voluntary initiative representing 13 of the world’s largest oil and gas producers working collaboratively toward solutions to mitigate the risks of #climatechange. @OGCINews https://t.co/n2ArwkJV9o https://t.co/cASGDUMHGf [11018213]\n",
+        "counter_examples": null,
+        "label": "primary_product"
+      }
+    ]
+  },
+  {
+    "super_category": "Fossil",
+    "super_definition": "Code posts as Fossil Fuel if refer to:\n\nFossil fuel primary products (as defined below)\nPetrochemicals or Petrochemical Products (as defined below)\nFossil fuel infrastructure and production (as defined below)\n",
+    "short_category": "Petrochemical products",
+    "multiline_category": "Petrochemical\nproducts",
+    "sub_categories": [
+      {
+        "category": "Petrochemicals or Petrochemical Products",
+        "definition": "The company mentions petrochemicals or products derived from petrochemicals, excluding fossil fuel-based motor fuels (gasoline and diesel).\n\nWe define Petrochemicals or Petrochemical Products to include:\n\nPetrochemicals\nOlefins\nAromatic compounds\nPetrochemical Products\nPlastics\nPackaging\nPolymers\nsynthetic resins\nLubricants\nDetergents\nmotor oils\nAny other products explicitly described as derived from hydrocarbons\n\nWe define Petrochemicals or Petrochemical Products to exclude:\n\nfossil fuels \nCoal\nOil\nnatural gas (aka methane, liquified natural gas (LNG))\nfossil fuel-based motor fuels \nGasoline\nDiesel\n",
+        "examples": "Large appliance parts with an excellent impact/stiffness balance using ExxonMobil ICP PP resin.[61940643]\nThe first foamable polypropylene that enables you to unlock opportunities in high-volume applications that benefit from low …[61940682]\n#DYK that thousands of medical devices people use every day are made using oil and natural gas? https://t.co/at6iFopgkO [11018613]",
+        "counter_examples": null,
+        "label": "petrochemical_product"
+      }
+    ]
+  },
+  {
+    "super_category": "Fossil",
+    "super_definition": "Code posts as Fossil Fuel if refer to:\n\nFossil fuel primary products (as defined below)\nPetrochemicals or Petrochemical Products (as defined below)\nFossil fuel infrastructure and production (as defined below)\n",
+    "short_category": "Fossil fuel infrastructure/production",
+    "multiline_category": "Fossil fuel\ninfrastructure/\nproduction",
+    "sub_categories": [
+      {
+        "category": "Fossil fuel infrastructure and production",
+        "definition": "INFRASTRUCTURE\nThe company explicitly refers to the production of fossil fuels, petrochemicals, or petrochemical products, and/or to the infrastructure associated with it.\n\nWe define Fossil fuel infrastructure as infrastructure owned or operated by fossil fuel companies that is associated with the exploration and production of fossil fuels, petrochemicals, or petrochemical products. Examples include:\n\noil and gas drilling facilities\nCoal mines\nRefineries\nPipelines\noil barrels/cylinders\nchemical plants\noil fields\noil well\nLNG plants\npetrochemical plants\n\nThe definition of Fossil fuel infrastructure is subject to the following conditions:\n\nOnly infrastructure that is explicitly described as relating to fossil fuels should be labeled. For example, a “plant”, “power plant”, “barrel”, “facility”, “complex”, “site”, “operation” etc. should not be labeled, but a “natural gas plant” or a “barrel of oil” or “drilling site” should be.\nDo not label infrastructure that is identified simply by its name or geographical location. For example, “Permian Basin” or “our Texas facility” should not be labeled, but “natural gas plant in the Permian Basin” or “Texas LNG facility” should be.\nDo not include infrastructure explicitly presented as entirely associated with renewable energy or false solutions, as defined above. For example, do not include barrels of biofuels.\nInclude infrastructure that is only in the process of being decarbonized or transitioning to renewables.\n\n\"PRODUCTION\nWe define Fossil fuel production as activities related to the investment in or execution of: exploration for, extraction of, or processing of fossil fuels (coal, oil, and natural gas). Examples include fossil fuel:\n\nDrilling\nRefining\nConditioning\nProducing\nTransportation\n\nThe definition of Fossil fuel production is subject to the following conditions:\n\nOnly activities that are explicitly described as relating to fossil fuels should be labeled. For example, “production in Guyana”, “refining”, “operations”, “activities”, “projects”, “energy production” etc. should not be labeled, but “gas production in Guyana” and “oil refining” should. \nDo not label activities that are explicitly described as renewable energy or false solution projects, as defined above. \nInclude references to companies as \"fossil fuel producers\", \"oil and gas producers\", etc.",
+        "examples": "INFRASTRUCTURE\nThis new digital project will leverage data from refineries and chemical plants around the world to more efficiently produce the …[10951327]\nMillard, whose farm is crossed by a pipeline operated by ExxonMobil Pipeline Company, comments on the company's …[10950394]\nEver wonder what life is like on one of the world's largest offshore platforms? Find out here. [10951142]\n\nPRODUCTION\nWe’re committed reducing emissions while also increasing energy supply in response to heightened global demand. 🌎<br /> <br /> How? In part by ramping up oil and natural gas production in the Permian Basin — a resource-rich region in Texas and New Mexico. 🏜…[240945089]\nWe’re working to increase oil and gas production in the Permian Basin: 460K oil-equivalent barrels in 2021 ➡️ 800K by 2027. <br /> <br /> Reducing emissions while we work to meet growing energy demand. Some facts about our operations in the Permian that you might not know. 👇…[240945057]\nToday we announced our plans to join the Oil and Gas Climate Initiative, a voluntary initiative representing 13 of the world’s largest oil and gas producers working collaboratively toward solutions to mitigate the risks of #climatechange. @OGCINews https://t.co/n2ArwkJV9o https://t.co/cASGDUMHGf [11018213]\nGreat breakthrough research with @imperialcollege and @GeorgiaTech published in today’s @ScienceMagazine. New membrane technology could lead to reduced emissions and lower the energy intensity required to refine crude oil. Learn more: https://t.co/FX3HMHQRt0 https://t.co/F9lJsTovTa [11017917]",
+        "counter_examples": "INFRASTRUCTURE \nExxonMobil and @SynGenomeInc biofuels program targets 10,000 barrels per day by 2025 https://t.co/048Mm9XAsc https://t.co/94UmhMQHg3 [11018391]\nSee why we're investing over $1 billion to expand our facilities in Rotterdam. [10951525]\nWe want to take a minute to highlight the amazing work the @ExxonMobil team is doing in the #PermianBasin to reduce emissions and provide needed energy to countless schools, homes and businesses in the region. Learn about the project in EnergyFactor: https://t.co/xRLx53x8ec. https://t.co/txyje6Xt1k [83609035]\nWe’re joining @airliquidegroup , @BorealisGroup, @TotalEnergies and @YARA_france to help decarbonize the industrial area in Normandy, France and explore development of a CO2 infrastructure, including capture and storage. Together, we can make a difference. https://t.co/f9eWpyyZ11 https://t.co/wv6o6I2Mdk [11017824]\nLearn more about the exciting work happening at ExxonMobil’s Baytown facility using low-carbon hydrogen and CCS. See how the technology can help reduce emissions at the complex…[82477798]\n\nPRODUCTION\nWe want to take a minute to highlight the amazing work the @ExxonMobil team is doing in the #PermianBasin to reduce emissions and provide needed energy to countless schools, homes and businesses in the region. Learn about the project in EnergyFactor: https://t.co/xRLx53x8ec. https://t.co/txyje6Xt1k [83609035]\nThe Strathcona Refinery in Canada is projected to produce 1 billion liters of diesel from renewable sources by 2024, which could help reduce up to 3 million CO2 emissions. Find out how the facility is working to meet energy needs that are sustainable for the future…[84458907]",
+        "label": "ff_infrastructure_production"
+      }
+    ]
+  },
+  {
+    "super_category": "Null",
+    "super_definition": "If no relevant label identified, then code as Null",
+    "short_category": "Miscellaneous",
+    "multiline_category": "Miscellaneous",
+    "sub_categories": [
+      {
+        "category": null,
+        "definition": null,
+        "examples": null,
+        "counter_examples": null,
+        "label": "misc"
+      }
+    ]
+  }
+]
