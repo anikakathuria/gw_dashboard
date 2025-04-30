@@ -103,10 +103,10 @@ def plot_green_brown(df, color_scheme):
     green_brown_counts['share'] = green_brown_counts['n'] / green_brown_counts['n'].sum()
     # Map categories to nice labels
     category_labels = {
-        'green': 'Green',
-        'brown': 'Brown',
+        'green': 'Only Green',
+        'brown': 'Only Fossil',
         'misc': 'Miscellaneous',
-        'green_brown': 'Green+Brown'
+        'green_brown': 'Green+Fossil'
     }
     green_brown_counts['green_brown'] = green_brown_counts['green_brown'].map(category_labels)
     green_brown_counts['label'] = green_brown_counts['green_brown'] + ' (' + (green_brown_counts['share'] * 100).round().astype(int).astype(str) + '%)'
@@ -116,10 +116,10 @@ def plot_green_brown(df, color_scheme):
 
     # Map to custom colors
     color_discrete_map = {
-        'Green': color_scheme['green'],
-        'Brown': color_scheme['brown'],
+        'Only Green': color_scheme['green'],
+        'Only Fossil': color_scheme['brown'],
         'Miscellaneous': color_scheme['misc'],
-        'Green+Brown': color_scheme['green_brown']
+        'Green+Fossil': color_scheme['green_brown']
     }
 
     # Plot single stacked bar
@@ -147,7 +147,7 @@ def plot_green_brown(df, color_scheme):
 
     fig.update_traces(
         textposition='inside',
-        hovertemplate='%{customdata[0]}: %{y:.0%}<extra></extra>'
+        hovertemplate='%{customdata[0]}: %{y:.0%}<extra></extra>',
     )
 
     return fig
@@ -171,7 +171,7 @@ def plot_overview(labeled_data, codebook, color_scheme):
     green_brown_plot = plot_green_brown(labeled_data, color_scheme)
     
     # Combine the plots using make_subplots
-    fig = make_subplots(rows=1, cols=3, subplot_titles=("Total Proportions", "Green Posts", "Brown Posts"), column_widths=[0.33, 0.33,0.33])
+    fig = make_subplots(rows=1, cols=3, subplot_titles=("Total Proportions", "All Green Posts", "All Fossil Posts"), column_widths=[0.33, 0.33,0.33])
     
     for trace in green_brown_plot['data']:
         fig.add_trace(trace, row=1, col=1)

@@ -1,4 +1,4 @@
-entity,channel_id,platform,channel_name,channel_uid,handle,link,,,,
+entity,channel_id,platform,search_data_fields.channel_data.channel_name,channel_uid,handle,link,,,,
 Shell,7637754,Facebook,Shell,200969413280005,Shell,https://facebook.com/200969413280005,,,,
 Shell,14850972,Facebook,Shell,470319116713955,ShellSGP,https://facebook.com/470319116713955,,,,
 Shell,3755689,Facebook,Shell USA,102915374460262,ShellUSA,https://facebook.com/102915374460262,,,,

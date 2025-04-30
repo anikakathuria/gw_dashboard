@@ -1,0 +1,167 @@
+import pandas as pd
+from dash import html, dcc
+
+# Define color schemes and classification labels
+green_brown_colors = {
+    "Green": "#a7caa0",
+    "green": "#a7caa0",
+    "Fossil": "#8b5b4b",
+    "brown": "#8b5b4b",
+    "green_brown": "#5a8c5a",
+    "misc": "#808080",
+}
+
+classification_labels = {
+    "green": "Green",
+    "brown": "Fossil",
+    "green_brown": "Green+Fossil",
+    "misc": "Miscellaneous"
+}
+
+def format_date(date_str):
+    date = pd.to_datetime(date_str)
+    return date.strftime("%B %d, %Y")
+
+def create_post_component(row):
+    classification_class = f"classification-{row['green_brown']}"
+    border_color = green_brown_colors.get(row['green_brown'], "#ddd")
+    
+    # Get the post ID from the data
+    # Assuming the post ID is in a column called 'post_id'
+    # If it's not, you'll need to extract it from another field or URL
+    post_id = row.get('post_id', None)
+    
+    # If post_id is not available, fall back to the original component
+    if post_id is None:
+        return create_original_post_component(row)
+    
+    # Create the iframe for the Junkipedia post
+    junkipedia_iframe = html.Iframe(
+        src=f"/junkipedia_proxy/{post_id}",
+        style={
+            "width": "100%",
+            "height": "500px", 
+            "border-radius": "8px",
+            "background-color": f"{border_color}"
+        },
+        # Add all necessary permissions to the sandbox
+        sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-downloads"
+    )
+    
+    return html.Div([
+        # Junkipedia content in an iframe - centered
+        html.Div([
+            junkipedia_iframe
+        ], className="post-content", style={
+            "display": "flex",
+            "justify-content": "center",
+            "align-items": "center",
+            "padding": "0",
+            "margin": "0",
+            "background-color": f"{border_color}"
+        }),
+        
+        # Keep the original footers
+        html.Div([
+            html.Span(
+                classification_labels[row['green_brown']].title(),
+                className=f"classification-badge {classification_class}",
+                title=row['green_label_explanation'],
+                style={"font-size": "14px"}
+            ),
+        ], className="post-footer-1",  style={
+            "background-color": f"{border_color}",
+            "padding": "12px 16px",
+            "text-align": "center",
+        }),
+        
+        html.Div([
+            *[
+                html.Span(
+                    column.replace("_", " ").title(),  # Display column name as badge text
+                    className=f"classification-badge classification-brown" if column in ["primary_product", "petrochemical_product", "ff_infrastructure_production","other_fossil"]
+                    else f"classification-badge classification-green",
+                    title=row['ff_categories_explanation'] if column in ["primary_product", "petrochemical_product", "ff_infrastructure_production"] else row['green_categories_explanation']
+                )
+                for column in [
+                    "primary_product", "petrochemical_product", "ff_infrastructure_production", "other_fossil",
+                    "renewable_energy", "emissions_reduction", "false_solutions", "recycling", "other_green"
+                ]
+                if row[column] == 1  # Only include badges for columns with a value of 1
+            ]
+        ], className="post-footer-2")
+    ], className="social-post", style={
+        "border": f"4px solid {border_color}",
+        "padding": "0",  # Remove padding to make container match iframe size
+        "overflow": "hidden",
+        "width": "75%",
+        "margin": "0 auto" 
+    })
+
+# Keep the original implementation as a fallback
+def create_original_post_component(row):
+    classification_class = f"classification-{row['green_brown']}"
+    border_color = green_brown_colors.get(row['green_brown'], "#ddd")
+    return html.Div([
+        html.Div([
+            html.H4(f"{row['company']} (@{row['search_data_fields.channel_data.channel_name']})", style={
+                "margin": "0",
+                "font-size": "16px",
+                "font-weight": "600",
+                "color": "#1a237e",
+            }),
+            html.Div(format_date(row['published_at']), className="post-date")
+        ], className="post-header", style={"background-color": f"{border_color}"}), 
+        html.Div([
+            html.H5(row['search_data_fields.post_title'] if row['search_data_fields.post_title'] != "[]" else "", style={
+                "margin": "0 0 12px 0",
+                "font-size": "16px",
+                "font-weight": "500",
+            }),
+            html.Div([
+                html.P(
+                    (row['complete_post_text'][:200]) if pd.notna(row['complete_post_text']) else "",
+                    className="post-preview"
+                ),
+                html.Div(
+                    row['complete_post_text'] if pd.notna(row['complete_post_text']) else "",
+                    className="simple-tooltip"
+                )
+            ], className="tooltip-wrapper", style={"position": "relative", "cursor": "pointer"}),
+            html.Img(
+                src=row['thumbnail_url'],
+                style={
+                    "width": "100%",
+                    "height": "200px",
+                    "object-fit": "cover",
+                    "border-radius": "8px",
+                    "margin-bottom": "16px"
+                }
+            ) if row['thumbnail_url'] != "[]" else None,
+        ], className="post-content"),
+        html.Div([
+            html.Span(f"👥 {row['engagement']:,}", className="engagement-badge"),
+            html.Span(row['search_data_fields.platform_name'], className="platform-badge"),
+            html.Span(
+                classification_labels[row['green_brown']].title(),
+                className=f"classification-badge {classification_class}",
+                title=row['green_label_explanation']
+            ),
+
+        ], className="post-footer"),
+        html.Div([
+            *[
+                html.Span(
+                    column.replace("_", " ").title(),  # Display column name as badge text
+                    className=f"classification-badge classification-brown" if column in ["primary_product", "petrochemical_product", "ff_infrastructure_production","other_fossil"]
+                    else f"classification-badge classification-green",
+                    title=row['ff_categories_explanation'] if column in ["primary_product", "petrochemical_product", "ff_infrastructure_production"] else row['green_categories_explanation']
+                )
+                for column in [
+                    "primary_product", "petrochemical_product", "ff_infrastructure_production", "other_fossil",
+                    "renewable_energy", "emissions_reduction", "false_solutions", "recycling", "other_green"
+                ]
+                if row[column] == 1  # Only include badges for columns with a value of 1
+            ]
+        ], className="post-footer")
+    ], className="social-post", style={"border": f"2px solid {border_color}"})

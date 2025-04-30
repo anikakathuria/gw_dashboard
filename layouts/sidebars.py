@@ -1,0 +1,301 @@
+from dash import html, dcc
+
+# Define color schemes and classification labels
+green_brown_colors = {
+    "Green": "#a7caa0",
+    "green": "#a7caa0",
+    "Fossil": "#8b5b4b",
+    "brown": "#8b5b4b",
+    "green_brown": "#5a8c5a",
+    "misc": "#808080",
+}
+
+classification_labels = {
+    "green": "Green",
+    "brown": "Fossil",
+    "green_brown": "Green+Fossil",
+    "misc": "Miscellaneous"
+}
+
+subcategory_labels = {
+    "primary_product": "Primary Product",
+    "petrochemical_product": "Petrochemical Product",
+    "ff_infrastructure_production": "Fossil Fuel Infrastructure",
+    "other_fossil": "Other Fossil",
+    "renewable_energy": "Renewable Energy",
+    "emissions_reduction": "Emissions Reduction",
+    "false_solutions": "False Solutions",
+    "recycling": "Recycling",
+    "other_green": "Other Green"
+}
+
+def create_sidebars(data):
+    # Get unique companies and channels
+    companies = sorted(data['company'].unique())
+    company_channels = {
+        company: sorted(data[data['company'] == company]['search_data_fields.channel_data.channel_name'].unique())
+        for company in companies
+    }
+    
+    # Social Media Sidebar
+    social_sidebar = html.Div([
+        html.H3("Feed Filters", style={"margin-bottom": "14px", "color": "#1a237e", "font-weight": "600"}),
+        
+        # Reset button
+        html.Button(
+            "Reset All Filters",
+            id="reset_social_filters",
+            className="reset-button",
+            style={
+                "width": "100%",
+                "margin-bottom": "20px",
+                "padding": "8px",
+                "background-color": "#f5f5f5",
+                "border": "1px solid #ddd",
+                "border-radius": "4px",
+                "cursor": "pointer"
+            }
+        ),
+        
+        html.Label("Keyword Search", style={"font-weight": "500", "margin-bottom": "8px"}),
+        dcc.Input(
+            id="keyword_search",
+            type="text",
+            placeholder="Search in posts...",
+            style={"width": "100%", "padding": "8px", "margin-bottom": "20px"}
+        ),
+        html.Label("Date Range", style={"font-weight": "500", "margin-bottom": "8px"}),
+        dcc.DatePickerRange(
+            id='date_range',
+            start_date=data['published_at'].min().strftime('%Y-%m-%d'),
+            end_date=data['published_at'].max().strftime('%Y-%m-%d'),
+            display_format='YYYY-MM-DD',
+            style={"margin-bottom": "20px", "width": "100%"}
+        ),
+        html.Label("View", style={"font-weight": "500", "margin-bottom": "8px"}),
+        dcc.RadioItems(
+            id="view_toggle",
+            options=[
+                {"label": "Comparison View", "value": "compare_posts"},
+                {"label": "All Posts", "value": "all_posts"},
+            ],
+            value="compare_posts",
+            style={"margin-bottom": "20px"}
+        ),
+        html.Div(id="comparison_subtoggle", children=[
+            html.Label("Classification 1", style={"font-weight": "300", "margin-bottom": "8px"}),
+            dcc.Dropdown(
+                id="left_view",
+                options=[
+                    {"label": "Green", "value": "green"},
+                    {"label": "Fossil", "value": "brown"},
+                    {"label": "Green + Fossil", "value": "green_brown"},
+                    {"label": "Miscellaneous", "value": "misc"}
+                ],
+                value="green",
+                style={"margin-bottom": "20px"}
+            ),
+            html.Label("Classification 2", style={"font-weight": "300", "margin-bottom": "8px"}),
+            dcc.Dropdown(
+                id="right_view",
+                options=[
+                    {"label": "Green", "value": "green"},
+                    {"label": "Fossil", "value": "brown"},
+                    {"label": "Green + Fossil", "value": "green_brown"},
+                    {"label": "Miscellaneous", "value": "misc"}
+                ],
+                value="brown",
+                style={"margin-bottom": "20px"}
+            )
+        ]),
+        html.Label("Companies", style={"font-weight": "500", "margin-bottom": "8px"}),
+        dcc.Dropdown(
+            id="company_filter",
+            options=[{"label": c, "value": c} for c in companies],
+            multi=True,
+            value=companies,
+            style={"margin-bottom": "20px"}
+        ),
+        html.Label("Platforms", style={"font-weight": "500", "margin-bottom": "8px"}),
+        dcc.Dropdown(
+            id="platform_filter",
+            options=[{"label": p, "value": p} for p in sorted(data['search_data_fields.platform_name'].unique())],
+            multi=True,
+            value=[p for p in sorted(data['search_data_fields.platform_name'].unique())],
+            style={"margin-bottom": "20px"}
+        ),
+        html.Div(id="classification_filter", children=[
+            html.Label("Classification", style={"font-weight": "500", "margin-bottom": "8px"}),
+            dcc.Dropdown(
+                id="classification_dropdown",
+                options=[
+                    {"label": "Green", "value": "green"},
+                    {"label": "Fossil", "value": "brown"},
+                    {"label": "Green + Fossil", "value": "green_brown"},
+                    {"label": "Miscellaneous", "value": "misc"}
+                ],
+                multi=True,
+                value=["green", "brown", "green_brown", "misc"],
+                style={"margin-bottom": "20px"}
+            )
+        ]),
+        # Subcategory filters
+        html.Label("Subcategories", style={"font-weight": "500", "margin-bottom": "8px"}),
+        html.Div([
+            html.Div([
+                html.Label("Fossil Fuel Categories", style={"font-weight": "500", "margin-bottom": "8px", "color": "#8b5b4b"}),
+                dcc.Checklist(
+                    id="social_fossil_subcategories",
+                    options=[
+                        {"label": "Primary Product", "value": "primary_product"},
+                        {"label": "Petrochemical Product", "value": "petrochemical_product"},
+                        {"label": "Fossil Fuel Infrastructure", "value": "ff_infrastructure_production"},
+                        {"label": "Other Fossil", "value": "other_fossil"}
+                    ],
+                    value=[],
+                    style={"margin-bottom": "16px"}
+                )
+            ]),
+            
+            html.Div([
+                html.Label("Green Categories", style={"font-weight": "500", "margin-bottom": "8px", "color": "#a7caa0"}),
+                dcc.Checklist(
+                    id="social_green_subcategories",
+                    options=[
+                        {"label": "Renewable Energy", "value": "renewable_energy"},
+                        {"label": "Emissions Reduction", "value": "emissions_reduction"},
+                        {"label": "False Solutions", "value": "false_solutions"},
+                        {"label": "Recycling", "value": "recycling"},
+                        {"label": "Other Green", "value": "other_green"}
+                    ],
+                    value=[],
+                    style={"margin-bottom": "16px"}
+                )
+            ])
+        ], style={"margin-bottom": "20px"}),
+        html.Label("Channels", style={"font-weight": "500", "margin-bottom": "8px"}),
+        dcc.Dropdown(
+            id="entity_filter",
+            options=[{"label": ch, "value": ch} for company in companies for ch in company_channels[company]],
+            multi=True,
+            value=[ch for ch_list in company_channels.values() for ch in ch_list],
+            style={"margin-bottom": "20px"}
+        ),
+        html.Label("Message Type", style={"font-weight": "500", "margin-bottom": "8px"}),
+        dcc.RadioItems(
+            id="uniqueness_toggle",
+            options=[
+                {"label": "Unique Messages", "value": "unique"},
+                {"label": "All Posts", "value": "all"},
+            ],
+            value="all",
+            style={"margin-bottom": "20px"}
+        )
+        
+    ], id="social_sidebar", className="sidebar")
+
+    # Analytics Sidebar
+    analytics_sidebar = html.Div([
+        html.H3("Analytics Filters", style={"margin-bottom": "14px", "color": "#1a237e", "font-weight": "600"}),
+        
+        # Reset button
+        html.Button(
+            "Reset All Filters",
+            id="reset_analytics_filters",
+            className="reset-button",
+            style={
+                "width": "100%",
+                "margin-bottom": "20px",
+                "padding": "8px",
+                "background-color": "#f5f5f5",
+                "border": "1px solid #ddd",
+                "border-radius": "4px",
+                "cursor": "pointer"
+            }
+        ),
+        
+        html.Label("Date Range", style={"font-weight": "500", "margin-bottom": "8px"}),
+        dcc.DatePickerRange(
+            id='analytics_date_range',
+            start_date=data['published_at'].min().strftime('%Y-%m-%d'),
+            end_date=data['published_at'].max().strftime('%Y-%m-%d'),
+            display_format='YYYY-MM-DD',
+            style={"margin-bottom": "20px", "width": "100%"}
+        ),
+        html.Label("Companies", style={"font-weight": "500", "margin-bottom": "8px"}),
+        dcc.Dropdown(
+            id="analytics_company_filter",
+            options=[{"label": c, "value": c} for c in companies],
+            multi=True,
+            value=companies,
+            style={"margin-bottom": "20px"}
+        ),
+         html.Label("Platforms", style={"font-weight": "500", "margin-bottom": "8px"}),
+        dcc.Dropdown(
+            id="analytics_platform_filter",
+            options=[{"label": p, "value": p} for p in sorted(data['search_data_fields.platform_name'].unique())],
+            multi=True,
+            value=[p for p in sorted(data['search_data_fields.platform_name'].unique())],
+            style={"margin-bottom": "20px"}
+        ),
+        # Subcategory filters
+        html.Label("Subcategories", style={"font-weight": "500", "margin-bottom": "8px"}),
+        html.Div([
+            html.Div([
+                html.Label("Fossil Fuel Categories", style={"font-weight": "500", "margin-bottom": "8px", "color": "#8b5b4b"}),
+                dcc.Checklist(
+                    id="analytics_fossil_subcategories",
+                    options=[
+                        {"label": "Primary Product", "value": "primary_product"},
+                        {"label": "Petrochemical Product", "value": "petrochemical_product"},
+                        {"label": "Fossil Fuel Infrastructure", "value": "ff_infrastructure_production"},
+                        {"label": "Other Fossil", "value": "other_fossil"}
+                    ],
+                    value=[],
+                    style={"margin-bottom": "16px"}
+                )
+            ]),
+            
+            html.Div([
+                html.Label("Green Categories", style={"font-weight": "500", "margin-bottom": "8px", "color": "#a7caa0"}),
+                dcc.Checklist(
+                    id="analytics_green_subcategories",
+                    options=[
+                        {"label": "Renewable Energy", "value": "renewable_energy"},
+                        {"label": "Emissions Reduction", "value": "emissions_reduction"},
+                        {"label": "False Solutions", "value": "false_solutions"},
+                        {"label": "Recycling", "value": "recycling"},
+                        {"label": "Other Green", "value": "other_green"}
+                    ],
+                    value=[],
+                    style={"margin-bottom": "16px"}
+                )
+            ])
+        ], style={"margin-bottom": "20px"}),
+        html.Label("Channels", style={"font-weight": "500", "margin-bottom": "8px"}),
+        dcc.Dropdown(
+            id="analytics_entity_filter",
+            options=[{"label": ch, "value": ch} for company in companies for ch in company_channels[company]],
+            multi=True,
+            value=[ch for ch_list in company_channels.values() for ch in ch_list],
+            style={"margin-bottom": "20px"}
+        ),
+        html.Label("Message Type", style={"font-weight": "500", "margin-bottom": "8px"}),
+        dcc.RadioItems(
+            id="analytics_uniqueness_toggle",
+            options=[
+                {"label": "Unique Messages", "value": "unique"},
+                {"label": "All Posts", "value": "all"},
+            ],
+            value="all",
+            style={"margin-bottom": "20px"}
+        )
+        
+    ], id="analytics_sidebar", className="sidebar", style={"display": "none"})
+
+    # About Sidebar
+    about_sidebar = html.Div([
+        html.P("Select a tab to view and filter content.", style={"font-weight": "500", "margin-bottom": "8px"}),
+    ], id="about_sidebar", className="sidebar", style={"display": "none"})
+    
+    return social_sidebar, analytics_sidebar, about_sidebar

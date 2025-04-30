@@ -3,7 +3,7 @@
     "super_category": "Green",
     "super_definition": "Code posts as Green if they refer in a neutral or positive light to:\n\nEnvironmental topics such as climate change, environment, nature, or sustainability\nrecycling and waste management (as defined below)\ngreenhouse gas emissions reductions (as defined below)\nlow-carbon technologies (as defined below)\nfalse solutions (as defined below). \n",
     "short_category": "Emission reduction",
-    "multiline_category": "Emission\nreduction",
+    "multiline_category": "Emission\nReduction",
     "sub_categories": [
       {
         "category": "Decreasing emissions",
@@ -18,7 +18,7 @@
     "super_category": "Green",
     "super_definition": "Code posts as Green if they refer in a neutral or positive light to:\n\nEnvironmental topics such as climate change, environment, nature, or sustainability\nrecycling and waste management (as defined below)\ngreenhouse gas emissions reductions (as defined below)\nlow-carbon technologies (as defined below)\nfalse solutions (as defined below). \n",
     "short_category": "Low-carbon technologies",
-    "multiline_category": "Low-carbon\ntechnologies",
+    "multiline_category": "Low-Carbon\nTechnologies",
     "sub_categories": [
       {
         "category": "Low-carbon technologies (aka “Renewable energy”)",
@@ -33,7 +33,7 @@
     "super_category": "Green",
     "super_definition": "Code posts as Green if they refer in a neutral or positive light to:\n\nEnvironmental topics such as climate change, environment, nature, or sustainability\nrecycling and waste management (as defined below)\ngreenhouse gas emissions reductions (as defined below)\nlow-carbon technologies (as defined below)\nfalse solutions (as defined below). \n",
     "short_category": "False solutions",
-    "multiline_category": "False solutions",
+    "multiline_category": "False Solutions",
     "sub_categories": [
       {
         "category": "False solutions (aka “Fuel or fuel-adjacent technologies”)",
@@ -48,7 +48,7 @@
     "super_category": "Green",
     "super_definition": "Code posts as Green if they refer in a neutral or positive light to:\n\nEnvironmental topics such as climate change, environment, nature, or sustainability\nrecycling and waste management (as defined below)\ngreenhouse gas emissions reductions (as defined below)\nlow-carbon technologies (as defined below)\nfalse solutions (as defined below). \n",
     "short_category": "Recycling/waste management",
-    "multiline_category": "Recycling/waste\nmanagement",
+    "multiline_category": "Recycling/Waste\nManagement",
     "sub_categories": [
       {
         "category": "Recycling or waste management",
@@ -63,22 +63,22 @@
     "super_category": "Green",
     "super_definition": "Code posts as Green if they refer in a neutral or positive light to:\n\nEnvironmental topics such as climate change, environment, nature, or sustainability\nrecycling and waste management (as defined below)\ngreenhouse gas emissions reductions (as defined below)\nlow-carbon technologies (as defined below)\nfalse solutions (as defined below). \n",
     "short_category": "Other green",
-    "multiline_category": "Other green",
+    "multiline_category": "Other Green",
     "sub_categories": [
       {
         "category": "Other green",
         "definition": "Any post labelled as Green but not fitting into any of the Green sub-category labels",
         "examples": null,
         "counter_examples": null,
-        "label": "green_message"
+        "label": "other_green"
       }
     ]
   },
   {
     "super_category": "Fossil",
     "super_definition": "Code posts as Fossil Fuel if refer to:\n\nFossil fuel primary products (as defined below)\nPetrochemicals or Petrochemical Products (as defined below)\nFossil fuel infrastructure and production (as defined below)\n",
-    "short_category": "Fossil fuels",
-    "multiline_category": "Fossil fuels",
+    "short_category": "Primary Product",
+    "multiline_category": "Primary Product",
     "sub_categories": [
       {
         "category": "Fossil fuel primary products",
@@ -93,7 +93,7 @@
     "super_category": "Fossil",
     "super_definition": "Code posts as Fossil Fuel if refer to:\n\nFossil fuel primary products (as defined below)\nPetrochemicals or Petrochemical Products (as defined below)\nFossil fuel infrastructure and production (as defined below)\n",
     "short_category": "Petrochemical products",
-    "multiline_category": "Petrochemical\nproducts",
+    "multiline_category": "Petrochemical\nProducts",
     "sub_categories": [
       {
         "category": "Petrochemicals or Petrochemical Products",
@@ -108,7 +108,7 @@
     "super_category": "Fossil",
     "super_definition": "Code posts as Fossil Fuel if refer to:\n\nFossil fuel primary products (as defined below)\nPetrochemicals or Petrochemical Products (as defined below)\nFossil fuel infrastructure and production (as defined below)\n",
     "short_category": "Fossil fuel infrastructure/production",
-    "multiline_category": "Fossil fuel\ninfrastructure/\nproduction",
+    "multiline_category": "Fossil Fuel Infrastructure/Production",
     "sub_categories": [
       {
         "category": "Fossil fuel infrastructure and production",
@@ -116,6 +116,21 @@
         "examples": "INFRASTRUCTURE\nThis new digital project will leverage data from refineries and chemical plants around the world to more efficiently produce the …[10951327]\nMillard, whose farm is crossed by a pipeline operated by ExxonMobil Pipeline Company, comments on the company's …[10950394]\nEver wonder what life is like on one of the world's largest offshore platforms? Find out here. [10951142]\n\nPRODUCTION\nWe’re committed reducing emissions while also increasing energy supply in response to heightened global demand. 🌎<br /> <br /> How? In part by ramping up oil and natural gas production in the Permian Basin — a resource-rich region in Texas and New Mexico. 🏜…[240945089]\nWe’re working to increase oil and gas production in the Permian Basin: 460K oil-equivalent barrels in 2021 ➡️ 800K by 2027. <br /> <br /> Reducing emissions while we work to meet growing energy demand. Some facts about our operations in the Permian that you might not know. 👇…[240945057]\nToday we announced our plans to join the Oil and Gas Climate Initiative, a voluntary initiative representing 13 of the world’s largest oil and gas producers working collaboratively toward solutions to mitigate the risks of #climatechange. @OGCINews https://t.co/n2ArwkJV9o https://t.co/cASGDUMHGf [11018213]\nGreat breakthrough research with @imperialcollege and @GeorgiaTech published in today’s @ScienceMagazine. New membrane technology could lead to reduced emissions and lower the energy intensity required to refine crude oil. Learn more: https://t.co/FX3HMHQRt0 https://t.co/F9lJsTovTa [11017917]",
         "counter_examples": "INFRASTRUCTURE \nExxonMobil and @SynGenomeInc biofuels program targets 10,000 barrels per day by 2025 https://t.co/048Mm9XAsc https://t.co/94UmhMQHg3 [11018391]\nSee why we're investing over $1 billion to expand our facilities in Rotterdam. [10951525]\nWe want to take a minute to highlight the amazing work the @ExxonMobil team is doing in the #PermianBasin to reduce emissions and provide needed energy to countless schools, homes and businesses in the region. Learn about the project in EnergyFactor: https://t.co/xRLx53x8ec. https://t.co/txyje6Xt1k [83609035]\nWe’re joining @airliquidegroup , @BorealisGroup, @TotalEnergies and @YARA_france to help decarbonize the industrial area in Normandy, France and explore development of a CO2 infrastructure, including capture and storage. Together, we can make a difference. https://t.co/f9eWpyyZ11 https://t.co/wv6o6I2Mdk [11017824]\nLearn more about the exciting work happening at ExxonMobil’s Baytown facility using low-carbon hydrogen and CCS. See how the technology can help reduce emissions at the complex…[82477798]\n\nPRODUCTION\nWe want to take a minute to highlight the amazing work the @ExxonMobil team is doing in the #PermianBasin to reduce emissions and provide needed energy to countless schools, homes and businesses in the region. Learn about the project in EnergyFactor: https://t.co/xRLx53x8ec. https://t.co/txyje6Xt1k [83609035]\nThe Strathcona Refinery in Canada is projected to produce 1 billion liters of diesel from renewable sources by 2024, which could help reduce up to 3 million CO2 emissions. Find out how the facility is working to meet energy needs that are sustainable for the future…[84458907]",
         "label": "ff_infrastructure_production"
+      }
+    ]
+  },
+  {
+    "super_category": "Fossil",
+    "super_definition": "Code posts as Fossil Fuel if refer to:\n\nFossil fuel primary products (as defined below)\nPetrochemicals or Petrochemical Products (as defined below)\nFossil fuel infrastructure and production (as defined below)\n",
+    "short_category": "Other fossil",
+    "multiline_category": "Other Fossil",
+    "sub_categories": [
+      {
+        "category": "Other fossil",
+        "definition": "Any post labelled as Fossil but not fitting into any of the Fossil sub-category labels",
+        "examples": null,
+        "counter_examples": null,
+        "label": "other_fossil"
       }
     ]
   },

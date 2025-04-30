@@ -1,0 +1,267 @@
+body {
+  font-family: "Inter", sans-serif;
+  margin: 0;
+  background-color: #f0f2f5;
+  padding-top: 64px;
+}
+.banner {
+  background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%);
+  color: white;
+  padding: 16px 24px;
+  text-align: left;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: 64px;
+  display: flex;
+  align-items: left;
+  justify-content: left;
+  box-sizing: border-box;
+}
+.sidebar {
+  width: 300px;
+  position: fixed;
+  height: calc(100vh - 64px);
+  padding: 24px;
+  background-color: white;
+  border-right: 1px solid #eee;
+  left: 0;
+  top: 64px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  z-index: 900;
+}
+.main-content {
+  margin-left: 300px;
+  padding: 24px;
+}
+.posts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  padding: 16px;
+}
+.social-post {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  transition: transform 0.2s;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.social-post:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.post-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid #eee;
+  background-color: #000000;
+}
+.post-date {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
+.post-content {
+  padding: 0;
+  flex-grow: 1;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.post-content iframe {
+  width: 100%;
+  border: none;
+  display: block;
+}
+.post-text {
+  max-height: 100px;
+  position: relative;
+}
+.tooltip-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+.simple-tooltip {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: #333;
+  color: #fff;
+  padding: 10px;
+  border-radius: 4px;
+  width: 300px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  z-index: 1000;
+  transition: opacity 0.3s ease;
+}
+.comparison-title {
+  background: white;
+  border-radius: 8px;
+  padding: 8px 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  font-size: 18px;
+  font-weight: 600;
+  color: #000000;
+  text-align: center;
+  border: 2px solid #e0e0e0;
+}
+.post-count {
+  background: white;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  font-size: 14px;
+  color: #666;
+  display: inline-block;
+}
+.post-count strong {
+  color: #1a237e;
+  font-weight: 600;
+}
+.tooltip-wrapper:hover .simple-tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+.simple-tooltip::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 0 8px 8px 8px;
+  border-style: solid;
+  border-color: transparent transparent #333 transparent;
+}
+.post-footer {
+  padding: 12px 16px;
+  background: #fafafa;
+  border-top: 1px solid #eee;
+  border-radius: 8px;
+}
+.post-footer-2 {
+  padding: 12px 16px;
+  background: #fafafa;
+  border-top: 1px solid #eee;
+  border-radius: 8px;
+}
+.engagement-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  background: #e3f2fd;
+  color: #1976d2;
+}
+.platform-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  background: #f3e5f5;
+  color: #7b1fa2;
+  margin-left: 8px;
+}
+.classification-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-left: 8px;
+}
+.classification-green {
+  background: #a7caa0;
+  color: #000000;
+}
+.classification-brown {
+  background: #8b5b4b;
+  color: #000000;
+}
+.classification-green_brown {
+  background: #5a8c5a;
+  color: #000000;
+}
+.classification-misc {
+  background: #808080;
+  color: #000000;
+}
+.pagination-button {
+  background: white;
+  border: 1px solid #ddd;
+  padding: 8px 16px;
+  border-radius: 4px;
+  margin: 0 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.pagination-button:hover:not(:disabled) {
+  background: #f5f5f5;
+}
+.pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.analytics-container {
+  padding: 30px;
+}
+.analytics-section {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  margin-bottom: 24px;
+  padding: 30px;
+}
+.analytics-header {
+  color: #1a237e;
+  font-weight: 600;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eee;
+}
+.analytics-description {
+  color: #666;
+  margin-bottom: 0px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.DateRangePickerInput {
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  width: 100%;
+}
+.DateInput {
+  width: 50%;
+}
+.DateInput_input {
+  font-size: 14px;
+  padding: 8px;
+  border: none;
+}
+.DateRangePickerInput_arrow {
+  padding: 0 8px;
+}
+.reset-button:hover {
+  background-color: #e0e0e0;
+  cursor: pointer;
+}
