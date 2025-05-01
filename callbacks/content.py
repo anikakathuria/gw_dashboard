@@ -173,10 +173,23 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                     html.Strong(f"{len(filtered_data)}"),
                     " posts"
                 ], className="post-count")
+
+                # Get every other item starting with the first item
+                posts_first_half = posts[::2]
+
+                # Get every other item starting with the second item
+                posts_second_half = posts[1::2]
                 
                 return html.Div([
                     post_count,
-                    html.Div(posts, className="posts-grid"),
+                    html.Div([
+                        html.Div([
+                            html.Div(posts_first_half, className="posts-grid")
+                        ], style={"width": "48%", "display": "inline-block"}),
+                        html.Div([
+                            html.Div(posts_second_half, className="posts-grid")
+                        ], style={"width": "48%", "display": "inline-block", "margin-left": "4%"})
+                    ]),
                     pagination_buttons
                 ])
             
@@ -325,13 +338,33 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
             return html.Div([
                 # About Section
                 html.Div([
-                    html.H2("About", className="analytics-header"),
                     html.P([
-                        "Climate Language and Influence Monitoring System (CLAIMS) is a project by Geoffrey Supran's Climate Accountability Lab at the University of Miami. For this pilot study, ChatGPT coded ",
-                        html.Strong(f"{total_posts:,}"),
-                        f" social media posts from {platforms}. All coding tasks use the codebook developed by our team to detect greenwashing efforts by oil companies. Human coders have validated the codebook. The codebook contains five green codes and four fossil fuel codes, see diagram below. Multiple labels can apply to the same post. We have coded posts as green, brown, or miscellaneous depending on the labels that ChatGPT has applied to each post, see Glossary below."
-                    ], className="analytics-description"),
+                        html.Strong("What is CLAIMS?")
+                    ], style={"font-size": "20px", "margin-bottom": "8px"}),
+                    html.P([
+                        "CLAIMS (Climate Language and Influence Monitoring System) is a tool of the Climate Discourse Observatory that automatically detects greenwashing in oil companies' social media posts. Search by keywords, topic, company, or platform to see data visualizations and summary statistics (Analytics), or explore the raw labelled posts yourself (Post Feed)."
+                    ], style={"font-size": "14px", "margin-bottom": "16px"}),
+                    html.P([
+                        html.Strong("How does CLAIMS work?")
+                    ], style={"font-size": "20px", "margin-bottom": "8px"}),
                     
+                    html.P([
+                        html.Strong("Model")
+                    ], style={"font-size": "14px", "margin-bottom": "8px"}),
+                    html.P([
+                        "By fine-tuning the ChatGPT-4o Large Language Model from OpenAI, CLAIMS reliably classifies text in social media posts from fossil fuel producers according to the typology of \"green\" and \"fossil fuel\" messaging shown below. Human coders have validated the accuracy of CLAIMS, which achieves F1 predictive performance scores of 80%+."
+                    ], style={"font-size": "14px", "margin-bottom": "8px"}),
+                    html.P([
+                        f"For this pilot study, ChatGPT coded {total_posts} organic posts and paid ads from BP, ExxonMobil, Shell, and the American Petroleum Institute on Facebook, Instagram, X \(Twitter\), and YouTube."
+                    ], style={"font-size": "14px", "margin-bottom": "16px"}),
+                    
+                    html.P([
+                        html.Strong("Typology")
+                    ], style={"font-size": "14px", "margin-bottom": "8px"}),
+                    
+                    html.P([
+                        "The typology contains five \"green\" categories and four \"fossil fuel\" categories. Multiple labels can apply to the same post."
+                    ], style={"font-size": "14px", "margin-bottom": "8px"}),
                     # Placeholder for a diagram - you can add an image here
                     html.Div([
                         html.Img(
@@ -343,34 +376,101 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                                 "display": "block"
                             }
                         )
-                    ], style={"text-align": "center", "margin": "30px 0"})
-                ], className="analytics-section"),
+                    ], style={"text-align": "center", "margin": "30px 0"}),
                 
-                # Glossary Section
-                html.Div([
-                    html.H2("Glossary", className="analytics-header"),
+                    html.P([
+                        html.Strong("Glossary")
+                    ], style={"font-size": "14px", "margin-bottom": "16px"}),
+
                     html.Ul([
                         html.Li([
-                            html.Strong("Green posts: "),
-                            "If at least one green label applies to a post, the post is coded as green, even if a fossil fuel label also applies to the post (see micro-scale greenwashing below)."
-                        ], style={"margin-bottom": "12px"}),
+                    
+                    html.P([
+                        html.Strong("Green posts", style={"font-size": "14px"}),
+                        ": If CLAIMS assigns at least one Green label to a post, the post is coded as Green."
+                    ], style={"font-size": "14px", "margin-bottom": "8px"}),
+                    
+                    html.Ul([
                         html.Li([
-                            html.Strong("Fossil fuel posts: "),
-                            "If no green and at least one fossil fuel label applies to a post, the post is coded as fossil fuel."
-                        ], style={"margin-bottom": "12px"}),
+                            html.Strong("Decreasing Emissions"),
+                            ": Positive or neutral references to greenhouse gas emissions reduction."
+                        ]),
                         html.Li([
-                            html.Strong("Miscellaneous posts: "),
-                            "Posts with no green or fossil fuel labels are not relevant to climate change and are coded as miscellaneous."
-                        ], style={"margin-bottom": "12px"}),
+                            html.Strong("Renewables & Low-Carbon Technologies"),
+                            ": Positive or neutral references to renewable energy and/or other low-carbon technology solutions, such as solar, wind, or hydropower."
+                        ]),
                         html.Li([
-                            html.Strong("Micro-scale greenwashing: "),
-                            "Posts with both fossil fuel and green labels indicate efforts to greenwash a specific part of a fossil fuel business. These posts are coded as green."
-                        ], style={"margin-bottom": "12px"}),
+                            html.Strong("False Solutions"),
+                            ": Positive or neutral references to fossil-fuel-adjacent \'false solutions\' to climate change, such as carbon capture, hydrogen, or \"clean\" methane."
+                        ]),
                         html.Li([
-                            html.Strong("Macro-scale greenwashing: "),
-                            "To measure macro-scale greenwashing, we first calculate the prevalence of green posts (% Green posts) among all climate-relevant posts (those labeled green or fossil fuel). Next, we determine the company's spending toward low-carbon technologies as a fraction of total capital investment (% Green CAPEX). A high frequency of green communication relative to a company's spending on low-carbon technologies (% Green posts divided by % Green CAPEX) is evidence of macro-scale greenwashing."
+                            html.Strong("Recycling & Waste Management"),
+                            ": Positive or neutral references to recycling and waste management efforts."
+                        ]),
+                        html.Li([
+                            html.Strong("Other Green"),
+                            ": Other green messaging, such as nature and generic environmental references."
                         ])
-                    ], style={"padding-left": "20px", "line-height": "1.6"})
+                    ], style={"font-size": "14px", "margin-bottom": "16px", "padding-left": "30px"})
+                        ]),
+
+                    html.Li([
+                    
+                    html.P([
+                        html.Strong("Fossil Fuel posts"),
+                        ": If CLAIMS assigns at least one Fossil Fuel label to a post and no green labels, the post is coded as Fossil Fuel."
+                    ], style={"font-size": "14px", "margin-bottom": "8px"}),
+                    
+                    html.Ul([
+                        html.Li([
+                            html.Strong("Primary Product"),
+                            ": References to one or more fossil fuel primary products, such as coal, oil, or methane."
+                        ]),
+                        html.Li([
+                            html.Strong("Petrochemical Product"),
+                            ": References to one or more petrochemical products, such as gasoline or lubricants."
+                        ]),
+                        html.Li([
+                            html.Strong("Infrastructure & Production"),
+                            ": References to fossil fuel production, operations, and/or infrastructure, such as pipelines, oil fields, or refineries."
+                        ]),
+                        html.Li([
+                            html.Strong("Other Fossil Fuel"),
+                            ": Other fossil fuel related messaging not captured by the labels above."
+                        ])
+                    ], style={"font-size": "14px", "margin-bottom": "16px", "padding-left": "30px"})
+
+                    ]),
+
+                    html.Li([
+                    
+                    html.P([
+                        html.Strong("Miscellaneous posts"),
+                        ": Posts not assigned any Green or Fossil Fuel labels by CLAIMS are not relevant to climate change and are coded as Miscellaneous."
+                    ], style={"font-size": "14px", "margin-bottom": "16px"}) ]),
+
+                    html.Li([
+                    
+                    html.P([
+                        html.Strong("Micro-scale greenwashing"),
+                        ": Micro-scale greenwashing is greenwashing at the level of an individual social media post. This reflects the fact that posts assigned both Fossil Fuel and Green labels by CLAIMS indicate efforts to greenwash messaging about fossil fuels."
+                    ], style={"font-size": "14px", "margin-bottom": "16px"}) ]),
+                    html.Li([
+                    
+                    html.P([
+                        html.Strong("Macro-scale greenwashing/Greenwashing Score"),
+                        ": Macro-scale greenwashing is greenwashing at the company-level. To measure macro-scale greenwashing, CDO has pioneered the first quantitative social media Greenwashing Score, which compares the prevalence of a company's green messaging to its actual climate mitigation investments. To calculate the Greenwashing Score, we first calculate the prevalence of green posts (% Green posts) among all climate-relevant posts (those labeled as Green or Fossil Fuel by CLAIMS). Next, we determine the company's spending on low-carbon technologies as a fraction of its total capital expenditures (% Green CAPEX). The Greenwashing Score is defined as % Green posts divided by % Green CAPEX, with values greater than 1 indicating macro-scale greenwashing."
+                    ], style={"font-size": "14px", "margin-bottom": "32px"}) ])
+                    ]),
+                    
+                    html.P([
+                        html.Strong("What is the Climate Discourse Observatory?")
+                    ], style={"font-size": "14px", "font-size": "20px", "margin-bottom": "16px"}),
+                    
+                    html.P([
+                        "CDO is a research initiative based at the Climate Accountability Lab at the University of Miami, directed by Dr. Geoffrey Supran in collaboration with the Algorithmic Transparency Institute (ATI), a project of the National Conference on Citizenship."
+                    ], style={"font-size": "14px", "margin-bottom": "16px"}),
+
                 ], className="analytics-section"),
                 
                 # Add hidden pagination buttons

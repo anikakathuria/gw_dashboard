@@ -27,7 +27,7 @@ def create_post_component(row, view_mode):
     border_color = green_brown_colors.get(row['green_brown'], "#ddd")
     
     # Set width based on view mode
-    post_width = "75%" if view_mode == "compare_posts" else "100%"
+    post_width = "80%"
     
     # Get the post ID from the data
     # Assuming the post ID is in a column called 'post_id'
@@ -44,7 +44,7 @@ def create_post_component(row, view_mode):
             src=f"/junkipedia_proxy/{post_id}",
             style={
                 "width": "100%",
-                "height": "500px", 
+                "height": "575px", 
                 "border-radius": "8px",
                 "background-color": f"{border_color}",
                 "display": "block",
