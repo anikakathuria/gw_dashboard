@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.express as px
 
 def plot_green_share(labeled_data, color_scheme):
+    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
     # 1) Convert dates & extract year
     df = labeled_data.copy()
     df['published_at'] = pd.to_datetime(df['published_at'])
@@ -32,7 +33,8 @@ def plot_green_share(labeled_data, color_scheme):
         labels={
             'pct_green': 'Share of Green Posts (%)',
             'year': 'Year'
-        }
+        },
+        color_discrete_sequence=colors
     )
     fig.update_layout(legend_title_text='Company', xaxis=dict(dtick=1))
     return fig

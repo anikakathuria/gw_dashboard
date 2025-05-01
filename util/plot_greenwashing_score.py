@@ -7,6 +7,7 @@ def plot_combined_greenwashing_scores(
     color_scheme,
     ratios_csv_path='data/low_carbon_ratios.csv'
 ):
+    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
     # Convert dates & extract year
     df = labeled_data.copy()
     df['published_at'] = pd.to_datetime(df['published_at'])
@@ -45,17 +46,20 @@ def plot_combined_greenwashing_scores(
     # Create traces for each company: even idx = raw, odd idx = normalized
     traces = []
     companies = merged['company'].unique()
-    for company in companies:
+    for i, company in enumerate(companies):
         cd = merged[merged['company'] == company]
+        color = colors[i % len(colors)]
         traces.append(go.Scatter(
             x=cd['year'], y=cd['green_ratio'], name=company,
             visible=True,
-            hovertemplate="Raw Score: %{y:.2f}<br>Year: %{x}<extra></extra>"
+            hovertemplate="Raw Score: %{y:.2f}<br>Year: %{x}<extra></extra>",
+            line=dict(color=color)
         ))
         traces.append(go.Scatter(
             x=cd['year'], y=cd['normalized_ratio'], name=company,
             visible=False,
-            hovertemplate="Normalized Score: %{y:.2f}<br>Year: %{x}<extra></extra>"
+            hovertemplate="Normalized Score: %{y:.2f}<br>Year: %{x}<extra></extra>",
+            line=dict(color=color)
         ))
 
     fig = go.Figure(data=traces)
@@ -63,7 +67,7 @@ def plot_combined_greenwashing_scores(
     # Define buttons for three states: raw linear, raw log, normalized linear
     buttons = [
         dict(
-            label="Raw Linear",
+            label="Raw Ratio (Linear)",
             method="update",
             args=[
                 {'visible': [i % 2 == 0 for i in range(len(traces))]},
@@ -71,7 +75,7 @@ def plot_combined_greenwashing_scores(
             ]
         ),
         dict(
-            label="Raw Log",
+            label="Raw Ratio (Log)",
             method="update",
             args=[
                 {'visible': [i % 2 == 0 for i in range(len(traces))]},
@@ -79,7 +83,7 @@ def plot_combined_greenwashing_scores(
             ]
         ),
         dict(
-            label="Normalized Linear",
+            label="Normalized Ratio",
             method="update",
             args=[
                 {'visible': [i % 2 == 1 for i in range(len(traces))]},

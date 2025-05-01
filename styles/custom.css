@@ -51,9 +51,8 @@ body {
   background: white;
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-  overflow: hidden;
   transition: transform 0.2s;
-  height: 100%;
+  height: auto; /* Allow posts to grow with content */
   display: flex;
   flex-direction: column;
 }
@@ -74,16 +73,23 @@ body {
 .post-content {
   padding: 0;
   flex-grow: 1;
-  overflow: hidden;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start; /* Changed from center to flex-start */
+  height: auto; /* Allow content to determine height */
 }
 
 .post-content iframe {
   width: 100%;
   border: none;
   display: block;
+}
+
+/* Add this new style for iframe container */
+.post-content iframe-container {
+  width: 100%;
+  position: relative;
+  height: auto; /* Allow container to grow with content */
 }
 .post-text {
   max-height: 100px;

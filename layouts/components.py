@@ -22,9 +22,12 @@ def format_date(date_str):
     date = pd.to_datetime(date_str)
     return date.strftime("%B %d, %Y")
 
-def create_post_component(row):
+def create_post_component(row, view_mode):
     classification_class = f"classification-{row['green_brown']}"
     border_color = green_brown_colors.get(row['green_brown'], "#ddd")
+    
+    # Set width based on view mode
+    post_width = "75%" if view_mode == "compare_posts" else "100%"
     
     # Get the post ID from the data
     # Assuming the post ID is in a column called 'post_id'
@@ -33,20 +36,31 @@ def create_post_component(row):
     
     # If post_id is not available, fall back to the original component
     if post_id is None:
-        return create_original_post_component(row)
+        return create_original_post_component(row, view_mode)
     
-    # Create the iframe for the Junkipedia post
-    junkipedia_iframe = html.Iframe(
-        src=f"/junkipedia_proxy/{post_id}",
-        style={
-            "width": "100%",
-            "height": "500px", 
-            "border-radius": "8px",
-            "background-color": f"{border_color}"
-        },
-        # Add all necessary permissions to the sandbox
-        sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-downloads"
-    )
+    # Create the iframe for the Junkipedia post with bottom 20px cut off
+    junkipedia_iframe = html.Div([
+        html.Iframe(
+            src=f"/junkipedia_proxy/{post_id}",
+            style={
+                "width": "100%",
+                "height": "500px", 
+                "border-radius": "8px",
+                "background-color": f"{border_color}",
+                "display": "block",
+                "margin-bottom": "-60px"  # This cuts off the bottom 
+            },
+            # Add all necessary permissions to the sandbox
+            sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-downloads"
+        )
+    ], style={
+        "width": "100%",
+        "border-radius": "8px",
+        "background-color": f"{border_color}",
+        "position": "relative",
+        "height": "auto",  # Allow container to grow
+        "overflow": "hidden"  # Only hide overflow at the bottom
+    })
     
     return html.Div([
         # Junkipedia content in an iframe - centered
@@ -55,10 +69,11 @@ def create_post_component(row):
         ], className="post-content", style={
             "display": "flex",
             "justify-content": "center",
-            "align-items": "center",
+            "align-items": "flex-start",  # Changed from center to flex-start
             "padding": "0",
             "margin": "0",
-            "background-color": f"{border_color}"
+            "background-color": f"{border_color}",
+            "height": "auto"  # Allow container to grow
         }),
         
         # Keep the original footers
@@ -93,15 +108,21 @@ def create_post_component(row):
     ], className="social-post", style={
         "border": f"4px solid {border_color}",
         "padding": "0",  # Remove padding to make container match iframe size
-        "overflow": "hidden",
-        "width": "75%",
-        "margin": "0 auto" 
+        "width": post_width,  # Set width based on view mode
+        "margin": "0 auto",
+        "height": "auto",  # Allow container to grow
+        "display": "flex",
+        "flex-direction": "column"
     })
 
 # Keep the original implementation as a fallback
-def create_original_post_component(row):
+def create_original_post_component(row, view_mode="compare_posts"):
     classification_class = f"classification-{row['green_brown']}"
     border_color = green_brown_colors.get(row['green_brown'], "#ddd")
+    
+    # Set width based on view mode
+    post_width = "75%" if view_mode == "compare_posts" else "100%"
+    
     return html.Div([
         html.Div([
             html.H4(f"{row['company']} (@{row['search_data_fields.channel_data.channel_name']})", style={
@@ -164,4 +185,8 @@ def create_original_post_component(row):
                 if row[column] == 1  # Only include badges for columns with a value of 1
             ]
         ], className="post-footer")
-    ], className="social-post", style={"border": f"2px solid {border_color}"})
+    ], className="social-post", style={
+        "border": f"2px solid {border_color}",
+        "width": post_width,  # Set width based on view mode
+        "margin": "0 auto"
+    })

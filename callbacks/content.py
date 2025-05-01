@@ -137,11 +137,13 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
             posts_per_page = 5
             
             if view_toggle == "all_posts":
+                posts_per_page = 6
                 # All Posts View
                 start = current_page * posts_per_page
                 end = start + posts_per_page
                 
-                posts = [create_post_component(row) for _, row in filtered_data.iloc[start:end].iterrows()]
+                # Pass the view_toggle to create_post_component
+                posts = [create_post_component(row, view_toggle) for _, row in filtered_data.iloc[start:end].iterrows()]
             
                 # Update pagination buttons visibility instead of recreating them
                 pagination_buttons = html.Div([
@@ -187,8 +189,9 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                 start = current_page * posts_per_page
                 end = start + posts_per_page
                 
-                left_posts = [create_post_component(row) for _, row in left_data.iloc[start:end].iterrows()]
-                right_posts = [create_post_component(row) for _, row in right_data.iloc[start:end].iterrows()]
+                # Pass the view_toggle to create_post_component
+                left_posts = [create_post_component(row, view_toggle) for _, row in left_data.iloc[start:end].iterrows()]
+                right_posts = [create_post_component(row, view_toggle) for _, row in right_data.iloc[start:end].iterrows()]
                 
                 max_posts = max(len(left_data), len(right_data))
                 
@@ -306,4 +309,71 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                 # Add hidden pagination buttons
                 hidden_pagination
 
+            ], className="analytics-container")
+            
+        elif tab_name == "about":
+            # Calculate dynamic values for the About section
+            total_posts = len(data)
+            platforms = ", ".join(sorted(data['search_data_fields.platform_name'].unique()))
+            
+            # Add hidden pagination buttons for about tab to ensure they're always in the DOM
+            hidden_pagination = html.Div([
+                html.Button('← Previous', id='prev_page', n_clicks=0, className="pagination-button"),
+                html.Button('Next →', id='next_page', n_clicks=0, className="pagination-button")
+            ], style={"display": "none"})
+            
+            return html.Div([
+                # About Section
+                html.Div([
+                    html.H2("About", className="analytics-header"),
+                    html.P([
+                        "Climate Language and Influence Monitoring System (CLAIMS) is a project by Geoffrey Supran's Climate Accountability Lab at the University of Miami. For this pilot study, ChatGPT coded ",
+                        html.Strong(f"{total_posts:,}"),
+                        f" social media posts from {platforms}. All coding tasks use the codebook developed by our team to detect greenwashing efforts by oil companies. Human coders have validated the codebook. The codebook contains five green codes and four fossil fuel codes, see diagram below. Multiple labels can apply to the same post. We have coded posts as green, brown, or miscellaneous depending on the labels that ChatGPT has applied to each post, see Glossary below."
+                    ], className="analytics-description"),
+                    
+                    # Placeholder for a diagram - you can add an image here
+                    html.Div([
+                        html.Img(
+                            src="/assets/codebook_diagram.png",  # Replace with actual image path
+                            style={
+                                "max-width": "30%",
+                                "height": "20%",
+                                "margin": "20px auto",
+                                "display": "block"
+                            }
+                        )
+                    ], style={"text-align": "center", "margin": "30px 0"})
+                ], className="analytics-section"),
+                
+                # Glossary Section
+                html.Div([
+                    html.H2("Glossary", className="analytics-header"),
+                    html.Ul([
+                        html.Li([
+                            html.Strong("Green posts: "),
+                            "If at least one green label applies to a post, the post is coded as green, even if a fossil fuel label also applies to the post (see micro-scale greenwashing below)."
+                        ], style={"margin-bottom": "12px"}),
+                        html.Li([
+                            html.Strong("Fossil fuel posts: "),
+                            "If no green and at least one fossil fuel label applies to a post, the post is coded as fossil fuel."
+                        ], style={"margin-bottom": "12px"}),
+                        html.Li([
+                            html.Strong("Miscellaneous posts: "),
+                            "Posts with no green or fossil fuel labels are not relevant to climate change and are coded as miscellaneous."
+                        ], style={"margin-bottom": "12px"}),
+                        html.Li([
+                            html.Strong("Micro-scale greenwashing: "),
+                            "Posts with both fossil fuel and green labels indicate efforts to greenwash a specific part of a fossil fuel business. These posts are coded as green."
+                        ], style={"margin-bottom": "12px"}),
+                        html.Li([
+                            html.Strong("Macro-scale greenwashing: "),
+                            "To measure macro-scale greenwashing, we first calculate the prevalence of green posts (% Green posts) among all climate-relevant posts (those labeled green or fossil fuel). Next, we determine the company's spending toward low-carbon technologies as a fraction of total capital investment (% Green CAPEX). A high frequency of green communication relative to a company's spending on low-carbon technologies (% Green posts divided by % Green CAPEX) is evidence of macro-scale greenwashing."
+                        ])
+                    ], style={"padding-left": "20px", "line-height": "1.6"})
+                ], className="analytics-section"),
+                
+                # Add hidden pagination buttons
+                hidden_pagination
+                
             ], className="analytics-container")
