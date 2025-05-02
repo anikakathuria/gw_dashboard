@@ -369,7 +369,7 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                         "By fine-tuning the ChatGPT-4o Large Language Model from OpenAI, CLAIMS reliably classifies text in social media posts from fossil fuel producers according to the typology of \"green\" and \"fossil fuel\" messaging shown below. Human coders have validated the accuracy of CLAIMS, which achieves F1 predictive performance scores of 80%+."
                     ], style={"font-size": "14px", "margin-bottom": "8px"}),
                     html.P([
-                        f"For this pilot study, ChatGPT coded {total_posts} organic posts and paid ads from BP, ExxonMobil, Shell, and the American Petroleum Institute on Facebook, Instagram, X \(Twitter\), and YouTube."
+                        f"For this pilot study, ChatGPT coded {total_posts} organic posts and paid ads from BP, ExxonMobil, Shell, and the American Petroleum Institute on Facebook, Instagram, X (Twitter), and YouTube."
                     ], style={"font-size": "14px", "margin-bottom": "16px"}),
                     
                     html.P([
