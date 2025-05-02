@@ -134,10 +134,10 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
             if classifications:
                 filtered_data = filtered_data[filtered_data['green_brown'].isin(classifications)]
 
-            posts_per_page = 5
+            posts_per_page = 10
             
             if view_toggle == "all_posts":
-                posts_per_page = 6
+                posts_per_page = 10
                 # All Posts View
                 start = current_page * posts_per_page
                 end = start + posts_per_page
@@ -275,9 +275,23 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                 html.Div([
                     html.H2("Post Classification Overview", className="analytics-header"),
                     html.P(
-                        "The proportions in the stacked bar chart (below, left) show how many posts were identified as green or brown. Multiple labels can apply to the same post. The two bar charts indicate the frequency of all green and fossil fuel labels. Posts with both green and fossil fuel labels indicate micro-scale greenwashing, therefore, we code them as green.",
+                        "This section shows the distribution of social media posts across categories and sub-categories.",
                         className="analytics-description"
                     ),
+                    html.P([
+                            html.Strong("Total Proportions (left) "),
+                            "Stacked bar chart showing the fraction of posts labelled by CLAIMS as Only Green, Only Fossil, Green+Fossil, or Miscellaneous."
+                    ], className="analytics-description"),
+                    html.P([
+                            html.Strong("All Green Posts (middle): "),
+                            "Bar chart showing the number of posts by Green subcategory, as labelled by CLAIMS: Emissions Reduction, False Solutions, Other Green, Recycling/Waste Management, and Low-Carbon Technologies. Posts assigned both Fossil Fuel and Green labels by CLAIMS indicate efforts to greenwash messaging about fossil fuels, and are therefore included in this bar chart."
+                    ], className="analytics-description"),
+                    html.P([
+                            html.Strong("All Fossil Posts (right): "),
+                            "Bar chart showing the number of posts by Fossil Fuel subcategory, as labelled by CLAIMS: Primary Product, Petrochemical Product, Other Fossil Fuel, and Infrastructure & Production."
+                    ], className="analytics-description"),
+                    
+                    
                     html.Div(
                         dcc.Graph(
                             figure=overview_fig,
@@ -291,7 +305,7 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                 html.Div([
                     html.H2("Greenwashing score: % Green posts / % Green CAPEX", className="analytics-header"),
                     html.P(
-                        "The green CAPEX (Capital Expenditures) measures the fraction of low-carbon capital investments among all capital investments. The ratio of green communication to green CAPEX reveals the degree of greenwashing across the industry. The line graph below shows the Greenwashing score over time by company.",
+                        "CDO has pioneered the first quantitative social media Greenwashing Score, which compares the prevalence of a company’s green messaging to its actual climate mitigation investments. The Greenwashing Score is defined as % Green posts divided by % Green CAPEX (capital expenditures), with values greater than 1 indicating greenwashing at the company-level, which we term macro-scale greenwashing. The line graphs show the Greenwashing Score over time for each company.",
                         className="analytics-description"
                     ),
                     html.Div(
@@ -307,7 +321,7 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                 html.Div([
                     html.H2("Green Share of Climate Relevant posts", className="analytics-header"),
                     html.P(
-                        "The line graph below shows the ratio of green (including green & fossil fuel) posts to fossil fuel posts across time.",
+                        "Line graph showing the fraction of climate-relevant social media posts that contain Green messaging. We here define Green messaging as any post labelled by CLAIMS as Only Green or Green+Fossil. We define climate-relevant posts as all posts except Miscellaneous ones.",
                         className="analytics-description"
                     ),
                     html.Div(
@@ -370,7 +384,7 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                         html.Img(
                             src="/assets/codebook_diagram.png",  # Replace with actual image path
                             style={
-                                "max-width": "30%",
+                                "max-width": "50%",
                                 "height": "20%",
                                 "margin": "20px auto",
                                 "display": "block"
