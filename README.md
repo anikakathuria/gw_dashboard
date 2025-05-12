@@ -81,22 +81,4 @@ Stored in `/data/`:
    python app.py
    ```
 
-> `app_2.py` appears to be an alternate or test version — prefer `app.py` for main deployment.
-
 ---
-
-## Future Ideas (Planned)
-
-- Add a **Green+Fossil** comparison column.
-- Break out **micro vs. macro** greenwashing over time.
-- Overlay **real-world events** on trend graphs.
-- Generate **word clouds** of frequent terms.
-- Add **OCR** support to process image-based posts.
-- Integrate **ad content** into analysis.
-
----
-
-## Notes to ATI (Procedural)
-
-- Typology, prompts, and dashboard updates will be iterative — this is version 1.0.
-- Follow ATI precedent for submitting GitHub update requests.
