@@ -254,8 +254,8 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
         elif tab_name == "analytics":
             # Generate overview plots using the Plotly-based functions
             overview_fig = plot_overview(filtered_data, codebook, green_brown_colors)
-            raw_greenwashing_fig = plot_combined_greenwashing_scores(filtered_data, green_brown_colors)
-            green_share_fig = plot_green_share(filtered_data, green_brown_colors)
+            raw_greenwashing_fig = plot_combined_greenwashing_scores(filtered_data)
+            green_share_fig = plot_green_share(filtered_data)
             
             post_count = html.Div([
                 "Analysis based on ",
