@@ -4,6 +4,7 @@ import pandas as pd
 import json
 import requests
 from flask import Response, request
+from bs4 import BeautifulSoup
 
 # Import layouts
 from layouts.sidebars import create_sidebars, green_brown_colors, classification_labels
@@ -90,10 +91,6 @@ app.layout = html.Div([
 register_filter_callbacks(app, data)
 register_navigation_callbacks(app)
 register_content_callbacks(app, data, codebook, green_brown_colors, classification_labels)
-
-from flask import Response
-import requests
-from bs4 import BeautifulSoup
 
 @app.server.route('/junkipedia_proxy/<post_id>')
 def junkipedia_proxy(post_id):
