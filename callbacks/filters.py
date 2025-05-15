@@ -2,12 +2,30 @@ from dash import Input, Output, State, ALL, callback_context
 import dash
 
 def register_filter_callbacks(app, data):
+    """
+    Register callbacks for filtering and resetting filters in the dashboard.
+
+    Arguments:
+        app (dash.Dash): The Dash app instance.
+        data (pd.DataFrame): The dataframe containing the data to be filtered.
+    
+    Returns:
+        None
+    """
     @app.callback(
         [Output("entity_filter", "options"),
          Output("entity_filter", "value")],
         [Input("company_filter", "value")]
     )
     def update_channels(selected_companies):
+        """
+        Update the options for the channel filter based on the selected companies.
+        Arguments:
+            selected_companies (list): List of selected companies.  
+        Returns:
+            options (list): List of dictionaries containing label and value for each channel.
+            channels (list): List of unique channels for the selected companies.
+        """
         if not selected_companies:
             return [], []
         
@@ -26,6 +44,15 @@ def register_filter_callbacks(app, data):
         [Input("analytics_company_filter", "value")]
     )
     def update_analytics_channels(selected_companies):
+        """
+        Update the options for the analytics channel filter based on the selected companies.
+        Arguments:
+            selected_companies (list): List of selected companies.
+
+        Returns:
+            options (list): List of dictionaries containing label and value for each channel.
+            channels (list): List of unique channels for the selected companies.
+        """
         if not selected_companies:
             return [], []
         
@@ -43,6 +70,16 @@ def register_filter_callbacks(app, data):
         [Input("view_toggle", "value")]
     )
     def toggle_comparison_controls(view_toggle):
+        """
+        Toggle the visibility of the comparison controls based on the selected view mode.
+        The comparison view should only be an option in the Post Feed tab.
+
+        Arguments:
+            view_toggle (str): The selected view mode.
+        Returns:
+            style (dict): CSS style for the comparison controls.
+        """
+
         if view_toggle == "compare_posts":
             return {"display": "block"}
         return {"display": "none"}
@@ -52,6 +89,14 @@ def register_filter_callbacks(app, data):
         [Input("view_toggle", "value")]
     )
     def toggle_classification_filter(view_toggle):
+        """
+        Toggle the visibility of the classification filter based on the selected view mode.
+        The classification filter should only be an option if the comparison toggle is "All Posts", not "Comparison View". 
+        Arguments:
+            view_toggle (str): The selected view mode.
+        Returns:
+            style (dict): CSS style for the classification filter.
+        """
         if view_toggle == "compare_posts":
             return {"display": "none"}
         return {"display": "block"}
@@ -61,6 +106,15 @@ def register_filter_callbacks(app, data):
         Input("tabs", "value")
     )
     def toggle_sidebars(tab):
+        """
+        Toggle the visibility of the sidebars based on the selected tab.
+        Arguments:
+            tab (str): The selected tab.
+        Returns:
+            social_style (dict): CSS style for the social media sidebar.
+            analytics_style (dict): CSS style for the analytics sidebar.
+            about_style (dict): CSS style for the about sidebar.
+        """
         if tab == "social_media":
             return {"display": "block"}, {"display": "none"}, {"display": "none"}
         elif tab == "analytics":
@@ -86,6 +140,23 @@ def register_filter_callbacks(app, data):
         prevent_initial_call=True
     )
     def reset_social_filters(n_clicks):
+        """
+        Reset the filters in the social media tab to their default values.
+        Arguments:
+            n_clicks (int): Number of clicks on the reset button.
+        Returns:
+                keyword_search (str): Default value for the keyword search.
+                view_toggle (str): Default value for the view toggle.
+                left_view (str): Default value for the left view.
+                right_view (str): Default value for the right view.
+                date_range (str): Default value for the date range.
+                company_filter (list): Default value for the company filter.
+                platform_filter (list): Default value for the platform filter.
+                classification_dropdown (list): Default value for the classification dropdown.
+                uniqueness_toggle (str): Default value for the uniqueness toggle.
+                social_fossil_subcategories (list): Default value for the social fossil subcategories.
+                social_green_subcategories (list): Default value for the social green subcategories.
+        """
         if n_clicks is None:
             return dash.no_update
         
@@ -120,6 +191,20 @@ def register_filter_callbacks(app, data):
         prevent_initial_call=True
     )
     def reset_analytics_filters(n_clicks):
+        """
+        Reset the filters in the analytics tab to their default values.
+        Arguments:
+            n_clicks (int): Number of clicks on the reset button.
+        
+        Returns:
+            analytics_date_range (str): Default value for the analytics date range.
+            analytics_company_filter (list): Default value for the analytics company filter.
+            analytics_platform_filter (list): Default value for the analytics platform filter.
+            analytics_uniqueness_toggle (str): Default value for the analytics uniqueness toggle.
+            analytics_fossil_subcategories (list): Default value for the analytics fossil subcategories.
+            analytics_green_subcategories (list): Default value for the analytics green subcategories.
+        """
+        
         if n_clicks is None:
             return dash.no_update
         

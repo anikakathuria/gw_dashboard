@@ -2,6 +2,13 @@ import dash
 from dash import Input, Output, State, clientside_callback
 
 def register_navigation_callbacks(app):
+    """
+    Register callbacks for navigation and pagination in the dashboard.
+    Arguments:
+        app (dash.Dash): The Dash app instance.
+    Returns:
+        None
+    """
     @app.callback(
         Output('current_page', 'data'),
         [Input('prev_page', 'n_clicks'),
@@ -45,6 +52,39 @@ def register_navigation_callbacks(app):
                    active_tab,
                    # Current page state
                    current_page):
+        """
+        Update the current page.
+
+        Arguments:
+            prev_clicks (int): Number of clicks on the previous page button.
+            next_clicks (int): Number of clicks on the next page button.
+            sm_start (str): Start date for social media filter.
+            sm_end (str): End date for social media filter.
+            sm_companies (list): Selected companies for social media filter.
+            sm_entities (list): Selected entities for social media filter.
+            sm_platforms (list): Selected platforms for social media filter.
+            sm_classifs (list): Selected classifications for social media filter.
+            view_toggle (str): View toggle state.
+            left_view (str): Left view state.
+            right_view (str): Right view state.
+            sm_uniqueness (str): Uniqueness toggle state for social media.
+            keyword_search (str): Keyword search value.
+            sm_fossil_subcategories (list): Selected fossil subcategories for social media filter.
+            sm_green_subcategories (list): Selected green subcategories for social media filter.
+            an_start (str): Start date for analytics filter.
+            an_end (str): End date for analytics filter.
+            an_companies (list): Selected companies for analytics filter.
+            an_entities (list): Selected entities for analytics filter.
+            an_platforms (list): Selected platforms for analytics filter.
+            an_uniqueness (str): Uniqueness toggle state for analytics.
+            an_fossil_subcategories (list): Selected fossil subcategories for analytics filter.
+            an_green_subcategories (list): Selected green subcategories for analytics filter.
+            active_tab (str): The currently active tab in the dashboard.
+            current_page (int): The current page number.
+        
+        Returns:
+            int: The updated page number.
+        """
         ctx = dash.callback_context
         if not ctx.triggered:
             return 0  # Default to first page

@@ -1,35 +1,36 @@
 from dash import html, dcc
 
-# Define color schemes and classification labels
-green_brown_colors = {
-    "Green": "#a7caa0",
-    "green": "#a7caa0",
-    "Fossil": "#8b5b4b",
-    "brown": "#8b5b4b",
-    "green_brown": "#5a8c5a",
-    "misc": "#808080",
-}
-
-classification_labels = {
-    "green": "Green",
-    "brown": "Fossil",
-    "green_brown": "Green+Fossil",
-    "misc": "Miscellaneous"
-}
-
-subcategory_labels = {
-    "primary_product": "Primary Product",
-    "petrochemical_product": "Petrochemical Product",
-    "ff_infrastructure_production": "Fossil Fuel Infrastructure",
-    "other_fossil": "Other Fossil",
-    "renewable_energy": "Renewable Energy",
-    "emissions_reduction": "Emissions Reduction",
-    "false_solutions": "False Solutions",
-    "recycling": "Recycling",
-    "other_green": "Other Green"
-}
-
 def create_sidebars(data):
+    """
+    Creates the sidebars for the dashboard for each of the three tabs: Post Feed, Analytics, and About.
+    The Post Feed tab contains the following filters:
+    - Keyword Search
+    - Date Range
+    - Companies
+    - Platforms
+    - Channels
+    - Message Type
+    - Classification
+    - Subcategories
+    - Reset button
+
+    The Analytics tab contains the following filters:
+    - Date Range
+    - Companies
+    - Platforms
+    - Channels
+    - Message Type
+    - Classification
+    - Subcategories
+    - Reset button
+
+    The About tab contains a brief description.
+
+    Arguments:
+        data (pd.DataFrame): The dataframe containing the data to be displayed in the dashboard.
+    Returns:
+        tuple: A tuple containing the three sidebars (social_sidebar, analytics_sidebar, about_sidebar).
+    """
     # Get unique companies and channels
     companies = sorted(data['company'].unique())
     company_channels = {

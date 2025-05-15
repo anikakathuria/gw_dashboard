@@ -18,11 +18,57 @@ classification_labels = {
     "misc": "Miscellaneous"
 }
 
-def format_date(date_str):
-    date = pd.to_datetime(date_str)
-    return date.strftime("%B %d, %Y")
+# Define the banner component of the dashboard
+banner = html.Div([
+    html.Div("CLAIMS", style={
+        "font-size": "40px",
+        "font-weight": "bold",
+        "color": "white",
+        "text-orientation": "upright",
+        "height": "10%",
+        "display": "flex",
+        "align-items": "left",
+        "justify-content": "left",
+        "padding-right": "16px",
+        "margin-bottom": "3px"
+    }),
+    html.Div([
+        html.Div("Climate Language and", style={
+            "font-size": "18px",
+            "font-weight": "500",
+            "color": "white",
+            "margin-bottom": "4px"
+        }),
+        html.Div("Influence Monitoring System", style={
+            "font-size": "18px",
+            "font-weight": "500",
+            "color": "white",
+            "margin-bottom": "3px"
+        })
+    ], style={
+        "display": "flex",
+        "flex-direction": "column",
+        "justify-content": "left",
+        "margin-left": "16px"
+    })
+], className="banner", style={
+    "display": "flex",
+    "align-items": "left",
+    "height": "10%"
+})
 
-def create_post_component(row, view_mode):
+def create_post_component(row):
+    """
+    Create a post component for the dashboard.
+    Retrieves the Junkipedia HTML embedding and displays it in an iframe.
+    Adds classification labels and other metadata as badges.
+
+    Arguments:
+        row (pd.Series): The row of data in the dataframe representing an invidual post.
+        view_mode (str): The view mode for the post (e.g., "compare_posts").
+    Returns:
+        html.Div: The post component.
+    """
     classification_class = f"classification-{row['green_brown']}"
     border_color = green_brown_colors.get(row['green_brown'], "#ddd")
     
@@ -33,10 +79,6 @@ def create_post_component(row, view_mode):
     # Assuming the post ID is in a column called 'post_id'
     # If it's not, you'll need to extract it from another field or URL
     post_id = row.get('post_id', None)
-    
-    # If post_id is not available, fall back to the original component
-    if post_id is None:
-        return create_original_post_component(row, view_mode)
     
     # Create the iframe for the Junkipedia post with bottom 20px cut off
     junkipedia_iframe = html.Div([
@@ -115,7 +157,24 @@ def create_post_component(row, view_mode):
         "flex-direction": "column"
     })
 
-# Keep the original implementation as a fallback
+""" 
+Old Version of create_post_component without Junkipedia embedding
+
+
+
+def format_date(date_str):
+    ""
+    Convert a date string to a more readable format.
+
+    Arguments:
+        date_str (str): The date string to format.
+    Returns:
+        date.strftime: The formatted date string.
+    ""
+    date = pd.to_datetime(date_str)
+    return date.strftime("%B %d, %Y")
+
+
 def create_original_post_component(row, view_mode="compare_posts"):
     classification_class = f"classification-{row['green_brown']}"
     border_color = green_brown_colors.get(row['green_brown'], "#ddd")
@@ -189,4 +248,5 @@ def create_original_post_component(row, view_mode="compare_posts"):
         "border": f"2px solid {border_color}",
         "width": post_width,  # Set width based on view mode
         "margin": "0 auto"
-    })
+    }) 
+"""

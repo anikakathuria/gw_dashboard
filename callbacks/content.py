@@ -7,6 +7,21 @@ from util.plot_greenwashing_score import plot_combined_greenwashing_scores
 from util.plot_green_share import plot_green_share
 
 def register_content_callbacks(app, data, codebook, green_brown_colors, classification_labels):
+    """
+    Register callbacks for the content section of the dashboard.
+    This function handles the content rendering of different tabs (Social Media, Analytics, About)
+    and applies the necessary filters based on user input.
+
+    Arguments:
+        app: The Dash app instance.
+        data: The DataFrame containing the social media data.
+        codebook: The codebook for the data.
+        green_brown_colors: Dictionary mapping classification labels to colors.
+        classification_labels: Dictionary mapping classification labels to their display names.
+
+    Returns:
+        None
+    """
     @app.callback(
         Output("content", "children"),
         [
@@ -52,9 +67,42 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
         an_start, an_end, an_companies, an_entities, an_platforms, an_uniqueness,
         an_fossil_subcategories, an_green_subcategories
     ):
+        """
+        Render the content of the selected tab based on user inputs and filters.
+        This function filters the data based on the selected criteria and generates the appropriate content.
+        It handles the rendering of social media posts, analytics plots, and the about section.
+
+        Arguments:
+            tab_name (str): The name of the selected tab.
+            current_page (int): The current page number for pagination.
+            sm_start (str): Start date for social media filtering.
+            sm_end (str): End date for social media filtering.
+            sm_companies (list): List of selected companies for social media filtering.
+            sm_entities (list): List of selected entities for social media filtering.
+            sm_platforms (list): List of selected platforms for social media filtering.
+            sm_classifs (list): List of selected classifications for social media filtering.
+            view_toggle (str): The current view toggle state.
+            left_view (str): The left view classification for comparison.
+            right_view (str): The right view classification for comparison.
+            sm_uniqueness (str): Uniqueness filter for social media posts.
+            keyword_search (str): Keyword search string for filtering posts.
+            sm_fossil_subcategories (list): Selected fossil subcategories for social media filtering.
+            sm_green_subcategories (list): Selected green subcategories for social media filtering.
+
+            an_start (str): Start date for analytics filtering.
+            an_end (str): End date for analytics filtering.
+            an_companies (list): List of selected companies for analytics filtering.
+            an_entities (list): List of selected entities for analytics filtering.
+            an_platforms (list): List of selected platforms for analytics filtering.
+            an_uniqueness (str): Uniqueness filter for analytics posts.
+            an_fossil_subcategories (list): Selected fossil subcategories for analytics filtering.
+            an_green_subcategories (list): Selected green subcategories for analytics filtering.
+
+        Returns:
+            html.Div: The content to be displayed in the selected tab.
+        """
         filtered_data = data.copy()
 
-        # ... [existing filtering code remains unchanged] ...
         
         if tab_name == "social_media":
             start_date, end_date = sm_start, sm_end
@@ -143,7 +191,7 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                 end = start + posts_per_page
                 
                 # Pass the view_toggle to create_post_component
-                posts = [create_post_component(row, view_toggle) for _, row in filtered_data.iloc[start:end].iterrows()]
+                posts = [create_post_component(row) for _, row in filtered_data.iloc[start:end].iterrows()]
             
                 # Update pagination buttons visibility instead of recreating them
                 pagination_buttons = html.Div([
@@ -203,8 +251,8 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                 end = start + posts_per_page
                 
                 # Pass the view_toggle to create_post_component
-                left_posts = [create_post_component(row, view_toggle) for _, row in left_data.iloc[start:end].iterrows()]
-                right_posts = [create_post_component(row, view_toggle) for _, row in right_data.iloc[start:end].iterrows()]
+                left_posts = [create_post_component(row) for _, row in left_data.iloc[start:end].iterrows()]
+                right_posts = [create_post_component(row) for _, row in right_data.iloc[start:end].iterrows()]
                 
                 max_posts = max(len(left_data), len(right_data))
                 

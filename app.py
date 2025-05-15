@@ -7,9 +7,9 @@ from flask import Response, request
 from bs4 import BeautifulSoup
 
 # Import layouts
-from layouts.sidebars import create_sidebars, green_brown_colors, classification_labels
-from layouts.content import content_layout, banner
-from layouts.components import green_brown_colors, classification_labels
+from layouts.sidebars import create_sidebars
+from layouts.content import content_layout
+from layouts.components import green_brown_colors, classification_labels, banner
 
 # Import callbacks
 from callbacks.filters import register_filter_callbacks
@@ -18,6 +18,12 @@ from callbacks.content import register_content_callbacks
 
 # Import data processing
 from process_data import process_data
+
+"""
+    This code sets up the dashboard, combining the layout, callbacks, and data processing.
+    It also includes a proxy for retrieving Junkipedia's post html embeddings and displaying within the dashboard.
+    The app is built using Dash, and custom CSS is located in styles/custom.css.
+"""
 
 # Load data
 codebook_path = "data/1_codebook.json"
@@ -94,6 +100,16 @@ register_content_callbacks(app, data, codebook, green_brown_colors, classificati
 
 @app.server.route('/junkipedia_proxy/<post_id>')
 def junkipedia_proxy(post_id):
+    """
+    Proxy for Junkipedia posts. This function fetches the post from Junkipedia and returns a minimal HTML embedding
+      with the post content. This is used to display the post in an iframe.
+
+    Arguments:
+        post_id (str): The "post_id" of the post to fetch from Junkipedia.
+    
+    Returns:
+        Response: A Flask Response object containing the HTML content of the post.
+    """
     resp = requests.get(f"https://www.junkipedia.org/posts/{post_id}")
     if resp.status_code != 200:
         return Response("…", status=resp.status_code)
@@ -135,22 +151,6 @@ def junkipedia_proxy(post_id):
     """
     return Response(html, content_type='text/html')
 
-
-@app.server.route('/junkipedia_resource')
-def junkipedia_resource():
-    """Proxy for Junkipedia resources (CSS, JS, images, etc.)"""
-    url = request.args.get("url")
-    if not url:
-        return "Missing URL parameter", 400
-
-    proxied_response = requests.get(url)
-    if proxied_response.status_code == 200:
-        return Response(
-            proxied_response.content, 
-            content_type=proxied_response.headers.get("Content-Type")
-        )
-    else:
-        return f"Failed to fetch resource. Status code: {proxied_response.status_code}", proxied_response.status_code
-
 if __name__ == "__main__":
     app.run_server(debug=True)
+    
