@@ -2,7 +2,17 @@ import pandas as pd
 
 import plotly.express as px
 
-def plot_green_share(labeled_data, color_scheme):
+def plot_green_share(labeled_data):
+    """
+    Plot the share of green posts out of posts labelled green or fossil fuel over time for each company.
+    Only companies with at least 25 green and 25 fossil posts are shown on the plot.
+    
+    Arguments:
+        labeled_data (pd.DataFrame): DataFrame containing the labeled data with columns 'company', 'published_at', 'green_brown'.
+    
+    Returns:
+        fig (plotly.graph_objects.Figure): Plotly figure object containing the line plot.
+    """
     colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
     # 1) Convert dates & extract year
     df = labeled_data.copy()

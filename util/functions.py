@@ -2,7 +2,7 @@ def url_deduplicate(df, content_column):
     """
     Replace URLs in the content column with [URL] and remove duplicate entries based on the cleaned text.
     
-    Parameters:
+    Arguments:
         df (pd.DataFrame): The input DataFrame.
         content_column (str): The name of the column containing the content.
     

@@ -4,9 +4,23 @@ import numpy as np
 
 def plot_combined_greenwashing_scores(
     labeled_data,
-    color_scheme,
     ratios_csv_path='data/low_carbon_ratios.csv'
 ):
+    """
+    Plot the greenwashing scores for each company over time, including both raw and normalized scores.
+    The plot includes buttons to toggle between a raw ratio on a linear scale, raw ratio on a log scale, and normalized score on a linear scale. 
+    The greenwashing score is calculated as the ratio of green posts to total climate-relevant posts (labelled as green or brown),
+      divided by the low-carbon ratio (the percentage of a company's CAPEX that was spent on low-carbon projects).
+    Only companies with at least 25 green and 25 fossil fuel posts are shown on the plot.
+    
+    Arguments:
+        labeled_data (pd.DataFrame): DataFrame containing the labeled data with columns 'company', 'published_at', 'green_brown'.
+        ratios_csv_path (str): Path to the CSV file containing low-carbon ratios for each company and year.
+    
+    Returns:
+        fig (plotly.graph_objects.Figure): Plotly figure object containing the line plot.
+
+    """
     colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
     # Convert dates & extract year
     df = labeled_data.copy()
