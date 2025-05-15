@@ -82,3 +82,13 @@ Stored in `/data/`:
    ```
 
 ---
+
+
+![about_page](https://github.com/user-attachments/assets/889325ec-5d03-4253-8ab4-338f42e38ab6)
+
+![analytics_page (1)](https://github.com/user-attachments/assets/5a903364-d84b-45bf-b361-d6e076631782)
+
+<img width="1271" alt="image" src="https://github.com/user-attachments/assets/ead4a160-51eb-4fee-ae6e-747487f94dca" />
+
+
+
