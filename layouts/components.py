@@ -54,7 +54,7 @@ banner = html.Div([
 ], className="banner", style={
     "display": "flex",
     "align-items": "left",
-    "height": "10%"
+    "height": "auto"
 })
 
 def create_post_component(row):
