@@ -14,7 +14,7 @@ def plot_combined_greenwashing_scores(
     Only companies with at least 25 green and 25 fossil fuel posts are shown on the plot.
     
     Arguments:
-        labeled_data (pd.DataFrame): DataFrame containing the labeled data with columns 'company', 'published_at', 'green_brown'.
+        labeled_data (pd.DataFrame): DataFrame containing the labeled data with columns 'company', 'year', 'green_brown'.
         ratios_csv_path (str): Path to the CSV file containing low-carbon ratios for each company and year.
     
     Returns:
@@ -24,15 +24,13 @@ def plot_combined_greenwashing_scores(
     colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
     # Convert dates & extract year
     df = labeled_data.copy()
-    df['published_at'] = pd.to_datetime(df['published_at'])
-    df['year'] = df['published_at'].dt.year
 
     # Count total vs green/brown posts per company/year
     summary = (
         df[df['green_brown'] != 'misc']
         .groupby(['company', 'year'])
         .agg(
-            total_posts=('post_id', 'count'),
+            total_posts=('id', 'count'),
             green_posts=('green', 'sum'),
             brown_posts=('fossil_fuel', 'sum')
         )

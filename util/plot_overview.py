@@ -2,55 +2,95 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import numpy as np
 
-def extract_labels(codebook):
-    labels = []
-    for entry in codebook:
-        for sub_category in entry.get('sub_categories', []):
-            labels.append({
-                'label': sub_category['label'],
-                'super_category': entry['super_category'],
-                'multiline_category': entry['multiline_category']
+def _shorten_and_wrap(raw_label: str, max_line_len: int = 14) -> str:
+    """
+    Take something like 'Green (Sub-Label) - Decreasing Emissions'
+    → 'Decreasing Emissions', then insert '\n' to softly wrap.
+    """
+    if not raw_label:
+        return ""
+    # Take the part after the last ' - ' if present
+    parts = [p.strip() for p in raw_label.split(' - ')]
+    core = parts[-1] if parts else raw_label.strip()
+
+    # Soft wrap to ~max_line_len per line
+    words = core.split()
+    lines, cur = [], []
+    cur_len = 0
+    for w in words:
+        if cur_len + len(w) + (1 if cur else 0) <= max_line_len:
+            cur.append(w)
+            cur_len += len(w) + (1 if cur_len else 0)
+        else:
+            lines.append(' '.join(cur))
+            cur = [w]
+            cur_len = len(w)
+    if cur:
+        lines.append(' '.join(cur))
+    return '\n'.join(lines)
+
+
+def _map_super_category(cat_id: str) -> str:
+    """
+    Map new primary IDs to legacy super-category labels for plotting/colors.
+    """
+    mapping = {
+        "green_messaging": "Green",
+        "fossil_fuel_messaging": "Fossil",
+        "other_messaging": "Other",
+    }
+    return mapping.get(cat_id, cat_id or "Other")
+
+
+def extract_labels(codebook: dict):
+    """
+    NEW adapter for the new codebook structure.
+    Builds the same records your plotting pipeline expects:
+    [{'label': <df_col>, 'super_category': 'Green'|'Fossil'|'Other',
+      'multiline_category': <wrapped short label>}]
+    """
+    records = []
+    for cat in codebook.get("categories", []):  # top-level categories
+        super_cat = _map_super_category(cat.get("id", ""))
+        for sub in cat.get("subcategories", []):
+            df_col = sub.get("id")  # machine-friendly: becomes DataFrame column name
+            display = sub.get("label")  # human-friendly: long text
+            if not df_col:
+                continue
+            records.append({
+                "label": df_col,
+                "super_category": super_cat,
+                "multiline_category": _shorten_and_wrap(display),
             })
-    return labels
+    return records
 
 def prepare_proportions(df, codebook):
-    # 1) turn your codebook into a DataFrame of label→meta
     labels_info = extract_labels(codebook)
     labels_df = pd.DataFrame(labels_info)
-    labels = labels_df['label'].tolist()
 
-    # 2) melt to long form & count positives per label
-    df_long = df[['post_uid'] + labels].melt(
-        id_vars='post_uid',
-        value_vars=labels,
-        var_name='label',
-        value_name='value'
+    # Only keep labels that actually exist in df
+    available = [c for c in labels_df["label"].tolist() if c in df.columns]
+    labels_df = labels_df[labels_df["label"].isin(available)]
+
+    df_long = df[['id'] + available].melt(
+        id_vars='id', value_vars=available, var_name='label', value_name='value'
     )
     agg = (
-        df_long
-        .groupby('label')
-        .agg(
-            n=('value', 'sum'),
-            total=('value', 'count')
-        )
+        df_long.groupby('label')
+        .agg(n=('value', 'sum'), total=('value', 'count'))
         .reset_index()
     )
     agg['not_that'] = agg['total'] - agg['n']
-
-    # 3) bring in super_category (and multiline_category)
     agg = agg.merge(labels_df, on='label')
 
-    # 4) compute share *within* each super_category
-    agg['share'] = (
-        agg
-        .groupby('super_category')['n']
-        .transform(lambda x: x / x.sum())
-    )
+    # Within-super share
+    group_totals = agg.groupby('super_category')['n'].transform('sum')
+    agg['share'] = agg['n'] / group_totals.replace(0, np.nan)
+    agg['share'] = agg['share'].fillna(0)
 
-    # 5) (optional) a human‐readable percent column
     agg['percent_label'] = (agg['share'] * 100).round(1).astype(str) + '%'
-
     return agg
 
 

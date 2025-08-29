@@ -102,7 +102,7 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
             html.Div: The content to be displayed in the selected tab.
         """
         filtered_data = data.copy()
-
+        print(len(filtered_data))
         
         if tab_name == "social_media":
             start_date, end_date = sm_start, sm_end
@@ -115,14 +115,17 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
             subcategory_filters = {
                 "primary_product": "primary_product" in sm_fossil_subcategories,
                 "petrochemical_product": "petrochemical_product" in sm_fossil_subcategories,
-                "ff_infrastructure_production": "ff_infrastructure_production" in sm_fossil_subcategories,
-                "other_fossil": "other_fossil" in sm_fossil_subcategories,
-                "renewable_energy": "renewable_energy" in sm_green_subcategories,
-                "emissions_reduction": "emissions_reduction" in sm_green_subcategories,
+                "infrastructure_production": "infrastructure_production" in sm_fossil_subcategories,
+                "other_fossil": "fossil_fuel_other" in sm_fossil_subcategories,
+                "decreasing_emissions": "decreasing_emissions" in sm_green_subcategories,
+                "viable_solutions": "viable_solutions" in sm_green_subcategories,
                 "false_solutions": "false_solutions" in sm_green_subcategories,
-                "recycling": "recycling" in sm_green_subcategories,
-                "other_green": "other_green" in sm_green_subcategories
+                "recycling_waste_management": "recycling_waste_management" in sm_green_subcategories,
+                "nature_animal_references": "nature_animal_references" in sm_green_subcategories,
+                "generic_environmental_references": "generic_environmental_references" in sm_green_subcategories,
+                "other_green": "green_other" in sm_green_subcategories
             }
+            print(len(filtered_data))
         else:  # analytics
             start_date, end_date = an_start, an_end
             companies, entities, platforms = an_companies, an_entities, an_platforms
@@ -133,15 +136,18 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
             subcategory_filters = {
                 "primary_product": "primary_product" in an_fossil_subcategories,
                 "petrochemical_product": "petrochemical_product" in an_fossil_subcategories,
-                "ff_infrastructure_production": "ff_infrastructure_production" in an_fossil_subcategories,
-                "other_fossil": "other_fossil" in an_fossil_subcategories,
-                "renewable_energy": "renewable_energy" in an_green_subcategories,
-                "emissions_reduction": "emissions_reduction" in an_green_subcategories,
+                "infrastructure_production": "infrastructure_production" in an_fossil_subcategories,
+                "other_fossil": "fossil_fuel_other" in an_fossil_subcategories,
+                "decreasing_emissions": "decreasing_emissions" in an_green_subcategories,
+                "viable_solutions": "viable_solutions" in an_green_subcategories,
                 "false_solutions": "false_solutions" in an_green_subcategories,
-                "recycling": "recycling" in an_green_subcategories,
-                "other_green": "other_green" in an_green_subcategories
+                "recycling_waste_management": "recycling_waste_management" in an_green_subcategories,
+                "nature_animal_references": "nature_animal_references" in an_green_subcategories,
+                "generic_environmental_references": "generic_environmental_references" in an_green_subcategories,
+                "other_green": "green_other" in an_green_subcategories
             }
         
+        print(len(filtered_data))
         # Apply uniqueness filter
         if uniqueness == "unique":
             filtered_data = url_deduplicate(filtered_data, 'complete_post_text')
@@ -150,35 +156,41 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
         if keyword_search:
             keyword_lower = keyword_search.lower()
             filtered_data = filtered_data[
-                filtered_data['search_data_fields.post_title'].str.lower().str.contains(keyword_lower, na=False) |
-                filtered_data['complete_post_text'].str.lower().str.contains(keyword_lower, na=False)
+                filtered_data['attributes.search_data_fields.post_title'].str.lower().str.contains(keyword_lower, na=False) |
+                filtered_data['attributes.complete_post_text'].str.lower().str.contains(keyword_lower, na=False)
             ]
         
-        # Apply date filter
+        #Apply date filter
         if start_date and end_date:
+            print("Length of filtered point 0: " + str(len(filtered_data)))
             filtered_data = filtered_data[
-                (filtered_data['published_at'] >= start_date) & 
-                (filtered_data['published_at'] <= end_date)
+                (filtered_data['attributes.published_at'] >= start_date) & 
+                (filtered_data['attributes.published_at'] <= end_date)
             ]
         
-        # Apply company filter
+        #Apply company filter
         if companies:
+            print("Length of filtered point 1: " + str(len(filtered_data)))
             filtered_data = filtered_data[filtered_data['company'].isin(companies)]
         
-        # Apply entity filter
+        #Apply entity filter
         if entities:
-            filtered_data = filtered_data[filtered_data['search_data_fields.channel_data.channel_name'].isin(entities)]
+            print("Length of filtered point 2: " + str(len(filtered_data)))
+            filtered_data = filtered_data[filtered_data['attributes.search_data_fields.channel_data.channel_name'].isin(entities)]
         
         # Apply platform filter
         if platforms:
-            filtered_data = filtered_data[filtered_data['search_data_fields.platform_name'].isin(platforms)]
+            print("Length of filtered point 3: " + str(len(filtered_data)))
+            filtered_data = filtered_data[filtered_data['attributes.search_data_fields.platform_name'].isin(platforms)]
         
         # Apply subcategory filters
         for subcategory, is_active in subcategory_filters.items():
+            print("Length of filtered point 4: " + str(len(filtered_data)))
             if is_active:
                 filtered_data = filtered_data[filtered_data[subcategory] == 1]
         
         if tab_name == "social_media":
+            print("Length of filtered point 5: " + str(len(filtered_data)))
             if classifications:
                 filtered_data = filtered_data[filtered_data['green_brown'].isin(classifications)]
 
@@ -389,7 +401,7 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
         elif tab_name == "about":
             # Calculate dynamic values for the About section
             total_posts = len(data)
-            platforms = ", ".join(sorted(data['search_data_fields.platform_name'].unique()))
+            platforms = ", ".join(sorted(data['attributes.search_data_fields.platform_name'].unique()))
             
             # Add hidden pagination buttons for about tab to ensure they're always in the DOM
             hidden_pagination = html.Div([

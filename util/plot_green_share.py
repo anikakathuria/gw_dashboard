@@ -14,17 +14,14 @@ def plot_green_share(labeled_data):
         fig (plotly.graph_objects.Figure): Plotly figure object containing the line plot.
     """
     colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
-    # 1) Convert dates & extract year
     df = labeled_data.copy()
-    df['published_at'] = pd.to_datetime(df['published_at'])
-    df['year'] = df['published_at'].dt.year
 
     # 2) Count total vs green posts per company/year
     summary = (
         df[df['green_brown'] != 'misc']
         .groupby(['company', 'year'])
         .agg(
-            total_posts=('post_id', 'count'),
+            total_posts=('id', 'count'),
             green_posts=('green', 'sum'),
             brown_posts=('fossil_fuel', 'sum')
         )

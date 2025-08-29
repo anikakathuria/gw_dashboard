@@ -1,0 +1,136 @@
+{
+  "categories": [
+    {
+      "id": "green_messaging",
+      "label": "Green (Primary Label)",
+      "definition": "Code posts as Green if they refer in a neutral or positive light to:\n\n● Decreasing Emissions (as defined below)\n● Renewable Energy (as defined below)\n● False Solutions (as defined below)\n● Recycling & Waste Management (as defined below)\n\nor if they contain  \n\n● References to nature and/or wildlife/animals (as defined below)\n● Generic Environmental References (as defined below).",
+      "examples": [
+        {
+          "input": "Read how Khalid Soofi's work on groundbreaking projects for #ConocoPhillips has set industry trends, including the development of ground-based emissions monitoring, or SOOFIE sensors. https://t.co/KWM5MNsONC https://t.co/TNcEKhs1iu",
+          "expected_output": {
+            "is_green": 1,
+            "explanation": "The post mentions emissions monitoring in a positive light, which qualifies as green messaging."
+          }
+        },
+        {
+          "input": "ConocoPhillips is committed to cultivating a culture that supports equality of opportunity and experience for all employees. As one ...",
+          "expected_output": {
+            "is_green": 0,
+            "explanation": "The post does not mention any green messaging or sustainability-related topics."
+          }
+        }
+      ],
+      "subcategories": [
+        {
+          "subcategory_id": 1,
+          "id": "decreasing_emissions",
+          "label": "Green (Sub-Label) - Decreasing Emissions",
+          "definition": "This label should be applied when the company/organization claims to be promoting, investing in, or otherwise working to develop and/or deploy technologies to decrease the greenhouse gas emissions (or to “reduce the carbon footprint”) associated with its operations and/or products, either in absolute or relative terms (such as “lowering carbon intensity”) and often in reference to a purported ambition by the company to reach net-zero emissions.\n\nThis label includes generic positive or neutral/non-critical references to ‘net-zero’ (including in hashtags) and ‘low(er)-carbon, as well as any mention of reducing/lowering carbon/CO2 emissions."
+        },
+        {
+          "subcategory_id": 2,
+          "id": "viable_solutions",
+          "label": "Green (Sub-Label) - Viable Solutions",
+          "definition": "This label should be applied when the company/organization claims to be promoting, investing in, or otherwise working to develop and/or deploy renewable energy and/or other low-carbon technology solutions. The claims may present the company as a critical player in the transition to renewable energy. Posts should only be categorized if they discuss renewables in a neutral/non-critical or positive light; negative sentiments towards renewables do not count.\n\nWe define renewable energy to include:\n\n● “renewable energy” (also “low-carbon electricity”, “clean energy”, “green energy”, and other general references to low-carbon technologies that do not mention specific technologies)\n● solar energy\n● wind energy\n● marine energy\n● hydropower\n● geothermal energy\n● renewable energy storage\n● renewable energy transmission\n\nWe define (non-renewable) low-carbon energy solutions to include:\n\n● battery electric vehicles (and associated charging infrastructure)\n● plug-in hybrid vehicles\n● nuclear power\n\nWe define renewable energy to EXCLUDE all False Solutions (as also defined below) as well as all fossil fuels (not just those portrayed as environmentally beneficial). This label includes literal generic references to ‘renewable energy’/’renewables’ as well as references to specific renewable and low-carbon energy solutions."
+        },
+        {
+          "subcategory_id": 3,
+          "id": "false_solutions",
+          "label": "Green (Sub-Label) - False Solutions",
+          "definition": "This label should be applied when the company/organization claims to be promoting, investing in, or otherwise working to develop and/or deploy ‘false’ solutions.\n\nWe define false solutions to include fossil fuel-adjacent technologies:\n\n● Carbon Capture and Storage (CCS)\n● Carbon Capture, Utilization, and Storage (CCUS)\n● Bioenergy (including biofuels for transportation, sometimes referred to as “renewable fuels” or “sustainable fuels”, and biomass for heat and electricity generation)\n● Hydrogen Energy (for transportation or electricity generation)\n● Fossil Fuels portrayed as environmentally beneficial (including “clean coal”, “clean” or “cleaner” natural gas, and “sustainable” gasoline)\n● Emissions offset/credit schemes\n● Fuel Cell Vehicles\n● Sustainable Aviation Fuels (SAFs)\n● fuel-based solutions that depend on clean energy (for example, hydrogen made from renewables)\n\nFalse solutions also include the following:\n\n● carbon pricing and carbon tax policies (such as TCI)\n● energy efficiency (unless this is presented purely as a consumer cost saving measure)\n● Mentioning/presentation of and narratives around fossil fuels being part of the solution (“and, not or”-narratives).\n\nWe define false solutions to EXCLUDE all Renewable & Low-Carbon Technologies (as defined above)."
+        },
+        {
+          "subcategory_id": 4,
+          "id": "recycling_waste_management",
+          "label": "Green (Sub-Label) - Recycling & Waste Management",
+          "definition": "This label should be applied when the company/organization claims to be promoting, investing in, or otherwise working to develop and/or deploy recycling or waste management solutions.\n\nWe define recycling or waste management solutions to include:\n\n● Recycling\n● Waste Management\n● Reduced waste and landfills\n● Reduced usage/more reuse\n● Circular economies\n● Reusable or sustainable plastics, polymers, and packaging\n\nThis label includes literal generic references to ‘recycling’ and ‘waste management’’ as well as references to specific recycling and waste management approaches."
+        },
+        {
+          "subcategory_id": 5,
+          "id": "nature_animal_references",
+          "label": "Green (Sub-Label) - Nature & Animal References",
+          "definition": "This label should be applied when the company/organization makes positive or neutral references to:\n\n● Nature\n● Conservation (efforts, practices, processes)\n● Wildlife/animals\n● Green/nature aesthetics (such as describing driving, cycling, hiking through nature/the countryside, scenic nature views, etc.)"
+        },
+        {
+          "subcategory_id": 6,
+          "id": "generic_environmental_references",
+          "label": "Green (Sub-Label) - Generic Environmental References",
+          "definition": "This label should be applied when the company/organization makes generic and vague (positive or neutral/non-critical) environmental references and statements, such as mentioning of:\n\n● Environmental progress\n● Tackling/driving progress on climate (change) challenges\n● Managing (potential) environmental and/or climate impact\n● Sustainability/living sustainably\n● Positive impact on the environment\n● Energy transformation\n● Energy transition\n● Shaping/changing the future (global) landscape/energy landscape\n● Environmental protection\n● Working towards/reaching climate goals\n● (Accelerating/investing in) energy progress\n● Making energy production safer for the environment\n● Green virtue signalling (‘being on the right side of history’)\n● Commitment to/investment in improving the environmental performance of Fossil Fuel products, facilities and/or operations.\n● Green/Eco initiatives (not covered by one of the other Green Sub-Labels), such as ‘Eco-Wheels’, or the ‘Shell Eco-Marathon’\n● References to Climate/Environmental Policy/Acts/Agreements/Bills (not covered by one of the other Green Sub-Labels - for example: policies/acts/agreements/bills relating to cutting greenhouse gas emissions should be coded as ‘Decreasing Emissions’).\n\nEXCLUDE: not explicitly green virtue-signaling (social justice, community investments, etc.)."
+        },
+        {
+          "subcategory_id": 7,
+          "id": "green_other",
+          "label": "Green (Sub-Label) - Other",
+          "definition": "If you feel that a post contains green messaging but does not fit any of our present green sub-labels, you should label this as Green - Other."
+        }
+      ]
+    },
+    {
+      "id": "fossil_fuel_messaging",
+      "label": "Fossil Fuel (Primary Label)",
+      "definition": "Code posts as Fossil Fuel if refer to:\n\n● Fossil Fuel Primary Products (as defined below)\n● Petrochemicals or Petrochemical Products (as defined below)\n● Fossil Fuel Infrastructure and Production (as defined below).",
+      "examples": [
+        {
+          "input": "The first foamable polypropylene that enables you to unlock opportunities in high-volume applications",
+          "expected_output": {
+            "is_fossil_fuel": 1,
+            "explanation": "The post mentions polypropylene, which is a petrochemical product, so it qualifies as fossil fuel-related."
+          }
+        },
+        {
+          "input": "See why we're investing over $1 billion to expand our facilities in Rotterdam. [10951525]",
+          "expected_output": {
+            "is_fossil_fuel": 0,
+            "explanation": "The post does not explicitly mention fossil fuels, petrochemical products, or fossil fuel infrastructure."
+          }
+        },
+        {
+          "input": "Learn how natural gas can be used to create cleaner energy. Subscribe now:",
+          "expected_output": {
+            "is_fossil_fuel": 1,
+            "explanation": "The post explicitly mentions natural gas, which is a fossil fuel, so it qualifies as fossil fuel-related."
+          }
+        },
+        {
+          "input": "Learn more about the exciting work happening at ExxonMobil’s Baytown facility using low-carbon hydrogen and CCS. See how the technology can help reduce emissions at the complex.",
+          "expected_output": {
+            "is_fossil_fuel": 0,
+            "explanation": "The post mentions low-carbon hydrogen and CCS without explicitly referencing fossil fuels, so it does not qualify as fossil fuel-related."
+          }
+        }
+      ],
+      "subcategories": [
+        {
+          "subcategory_id": 1,
+          "id": "primary_product",
+          "label": "Fossil Fuel (Sub-Label) - Primary Product",
+          "definition": "This label should be applied when the company/organization mentions fossil fuels or fossil fuel-based motor fuels, subject to the following conditions:\n\nThis label includes any explicitly named fossil fuel primary product regardless of environmental sentiment (i.e. regardless of whether fossil fuel primary products are portrayed as environmentally beneficial, harmful, or neutral). You should therefore include references to “renewable diesel”, “clean natural gas”, “clean coal”, etc.\n\nReferences to “fuels” made by fossil fuel companies should be assumed by default to be fossil fuel-based and thus labeled as Fossil fuel primary products. Thus, include “marine fuel”, “aviation fuel”, “sustainable fuel”, “renewable fuel”, “lower emission fuel”, etc. This also includes fossil fuel-based motor fuel product lines such as Synergy, Mobil 1, and V-Power.\n\nInclude references to companies as fossil fuel companies, oil and gas companies, etc. Do not include fossil fuel primary products that are implied but not named. For example, do not include carbon capture and storage or carbon offsetting unless their associated fossil fuel primary products are explicitly mentioned.\n\nAside from the fossil fuel-based motor fuels gasoline and diesel, DO NOT INCLUDE Petrochemicals or Petrochemical Products because they are not primary fossil fuel products.\n\nNote that Fossil fuel primary products and Fossil fuel infrastructure and production will often overlap, particularly when fossil fuels are mentioned in the context of infrastructure or production. These two categories are not mutually exclusive and should both be coded as needed. For example, “oil production” should be coded as both Fossil fuel primary products and Fossil fuel Infrastructure & Production.\n\nDo not code Fossil Fuel Primary Products if they appear only as part of an organization name (such as ‘American Petroleum Institute’) or product/service name such as ‘Shell OilChange’ (unless the product itself is a Fossil Fuel Primary Product).\n\nDo not code Fossil Fuel Primary Products in compound nouns such as ‘oil barrel’, ‘gas station’ (code those as Fossil Fuel Infrastructure & Production) or ‘carbon capture and storage’ (code this as Green - False Solutions).\n\nWe define Fossil Fuel Primary Products to include:\n\n● Fossil Fuels\n● Coal/Carbon\n● Oil\n● Natural Gas (aka methane, liquified natural gas (LNG))\n● Fossil fuel-based motor fuels\n● Gasoline\n● Diesel\n\nWe define fossil fuel primary products to EXCLUDE:\n\n● Biofuels\n● Algae oils\n● Oil seed\n● Hydrogen fuel\n● Petrochemicals and Petrochemical Products (as defined below)"
+        },
+        {
+          "subcategory_id": 2,
+          "id": "petrochemical_product",
+          "label": "Fossil Fuel (Sub-Label) - Petrochemical Product",
+          "definition": "The company/organization mentions petrochemicals or products derived from petrochemicals (other than fossil fuel-based motor fuels such as gasoline and diesel).\n\nWe define Petrochemicals or Petrochemical Products to include:\n\n● Petrochemicals\n● Olefins\n● Aromatic compounds\n● Petrochemical Products\n● Plastics\n● Packaging\n● Polymers\n● Synthetic resins\n● Lubricants\n● Detergents\n● Motor oils, “in-service oils”\n● Any other products explicitly described as derived from hydrocarbons\n\nThis label includes literal references to “petrochemicals” and “petrochemical products”, “lubricants”, “plastic”, etc. as well as reference to specific petrochemical products and product names, such as for example Mobil Delvac motor-oil.\n\nWe define Petrochemicals/Petrochemical Products to EXCLUDE all Fossil Fuel Primary Products (as defined above)."
+        },
+        {
+          "subcategory_id": 3,
+          "id": "infrastructure_and_production",
+          "label": "Fossil Fuel (Sub-Label) - Infrastructure & Production",
+          "definition": "INFRASTRUCTURE\n\nThe company explicitly refers to the production of fossil fuels, petrochemicals, or petrochemical products, and/or to the infrastructure associated with it. We define Fossil fuel infrastructure as infrastructure owned or operated by fossil fuel companies that is associated with the exploration and production of fossil fuels, petrochemicals, or perechemical products.\n\nExamples include:\n\n● Oil and gas drilling facilities\n● Coal mines\n● Refineries\n● Pipelines\n● Oil barrels/cylinders\n● Chemical plants\n● Oil fields\n● Oil well\n● LNG plants\n● Petrochemical plants\n● Gas stations (including clear references to those including the company name, such as ‘Shell station’, ‘BP station’ etc.)\n● Fuel pumps\n\nThe definition of Fossil fuel Infrastructure is subject to the following conditions:\n\nOnly infrastructure that is explicitly described as relating to fossil fuels should be labeled. For example, a ‘plant', ‘power plant’, ‘barrel’, ‘facility’, ‘complex’, ‘site’, ‘operation’ on its own etc. should not be labeled, but a ‘natural gas plant’ or a ‘barrel of oil’ or ‘drilling site’ should be labeled. Also include generic literal references to the ‘oil and gas industry’ or ‘fossil fuel operations’ and ‘oil and gas infrastructure’.\n\nDo not label infrastructure that is identified simply by its name or geographical location. For example, ‘Permian Basin’ or ‘our Texas facility’ should not be labeled, but ‘natural gas plant in the Permian Basin’ or ‘Texas LNG facility’ should be labeled.\n\nDo not include infrastructure explicitly presented as entirely associated with renewable energy or false solutions, as defined above. For example, do not include ‘barrels of biofuel’. Include infrastructure that is only in the process of being decarbonized or transitioning to renewables.\n\nPRODUCTION\n\nWe define Fossil Fuel Production as activities related to the investment in or execution of: exploration for, extraction of, or processing of fossil fuels (coal, oil, and natural gas) as well as the production of Petrochemicals.\n\nExamples include fossil fuel:\n\n● Drilling\n● Refining\n● Conditioning\n● Producing\n● Transportation\n● Exports\n● Permitting/leasing\n\nThe definition of Fossil fuel production is subject to the following conditions:\n\nOnly activities that are explicitly described as relating to fossil fuels should be labeled. For example, ‘production in Guyana’, ‘refining’, ‘operations’, ‘activities’, ‘projects’, ‘energy production’ etc. should not be labeled, but ‘gas production in Guyana’ and ‘oil refining’ should be labeled. Do not label activities that are explicitly described as renewable energy or false solution projects, as defined above.\n\nInclude references to companies as 'fossil fuel producers', 'oil and gas producers', etc. Also include literal references to “energy production”.\n\nPROFESSIONAL ACTIVITY\n\n● Fossil Fuel Industry recruitment activities/events/initiatives\n● Fossil Fuel Industry training activity events/courses and professional certifications/licenses.\n● fossil fuel specific job-titles, such as ‘refinery manager’, as well as generic references to fossil fuel industry workers such as 'offshore industry operators'."
+        },
+        {
+          "subcategory_id": 4,
+          "id": "fossil_fuel_other",
+          "label": "Fossil Fuel (Sub-Label) - Other",
+          "definition": "If you feel that a post contains fossil fuel messaging but does not fit any of our present fossil fuel sub-labels, you should label this as Fossil Fuel - Other."
+        }
+      ]
+    },
+    {
+      "id": "other_messaging",
+      "label": "Other Messaging (Primary Label)",
+      "definition": "If a post does not contain any content that fits either the ‘Fossil Fuel Messaging’ or the ‘Green Messaging’ primary label, then you should code the entire post as ‘Other'.",
+      "subcategories": []
+    }
+  ]
+}

@@ -17,7 +17,7 @@ from callbacks.navigation import register_navigation_callbacks
 from callbacks.content import register_content_callbacks
 
 # Import data processing
-from process_data import process_data
+from process_data import process_data_csv, process_data_json
 
 """
     This code sets up the dashboard, combining the layout, callbacks, and data processing.
@@ -26,7 +26,7 @@ from process_data import process_data
 """
 
 # Load data
-codebook_path = "data/1_codebook.json"
+codebook_path = "data/codebook.json"
 data_path = "data/final_greenwashing_dataset_for_dashboard_english_only.csv"
 channel_mapping_path = "data/channel_mapping.csv"
 
@@ -37,8 +37,12 @@ with open(codebook_path, "r") as f:
     codebook = json.load(f)
 
 # Load and preprocess data
-data = pd.read_csv(data_path)
-data = process_data(data, channel_mapping)
+# data = pd.read_csv(data_path)
+# data = process_data_csv(data, channel_mapping)
+
+data = json.load(open("data/dashboard_1.2_sample_english_dimensions_parententities.json"))
+data = process_data_json(data)
+print(f"Loaded {len(data)} posts")
 
 # Initialize Dash app
 app = dash.Dash(
@@ -48,6 +52,22 @@ app = dash.Dash(
         "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
     ]
 )
+
+# def print_nan_summary(df):
+#     nan_counts = df.isna().sum()
+#     summary = pd.DataFrame({
+#         'Column': nan_counts.index,
+#         'NaN Count': nan_counts.values
+#     })
+#     # Ensure full output is shown
+#     pd.set_option('display.max_rows', None)
+#     print(summary)
+#     pd.reset_option('display.max_rows')
+
+# print_nan_summary(data)
+
+print("Number of fossil fuel posts:", (data['fossil_fuel'] == True).sum())
+print(data['y_pred'].head(n=10))
 
 # Custom CSS - Load from external file
 with open('styles/custom.css', 'r') as f:
@@ -152,5 +172,5 @@ def junkipedia_proxy(post_id):
     return Response(html, content_type='text/html')
 
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    app.run(debug=True)
     

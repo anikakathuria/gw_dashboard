@@ -78,30 +78,27 @@ def create_post_component(row):
     # Get the post ID from the data
     # Assuming the post ID is in a column called 'post_id'
     # If it's not, you'll need to extract it from another field or URL
-    post_id = row.get('post_id', None)
+    post_id = row.get('id', None)
+    height = row.get('computed_height', 800)
+    width = row.get('computed_width', 600)
     
     # Create the iframe for the Junkipedia post with bottom 20px cut off
     junkipedia_iframe = html.Div([
         html.Iframe(
             src=f"/junkipedia_proxy/{post_id}",
             style={
-                "width": "100%",
-                "height": "575px", 
-                "border-radius": "8px",
+                "width": f"{width}",
+                "height": f"{height}", 
                 "background-color": f"{border_color}",
-                "display": "block",
-                "margin-bottom": "-60px"  # This cuts off the bottom 
+                "display": "block", 
             },
             # Add all necessary permissions to the sandbox
             sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-downloads"
         )
     ], style={
-        "width": "100%",
-        "border-radius": "8px",
+        "width": f"{width}",
         "background-color": f"{border_color}",
         "position": "relative",
-        "height": "auto",  # Allow container to grow
-        "overflow": "hidden"  # Only hide overflow at the bottom
     })
     
     return html.Div([
@@ -136,13 +133,13 @@ def create_post_component(row):
             *[
                 html.Span(
                     column.replace("_", " ").title(),  # Display column name as badge text
-                    className=f"classification-badge classification-brown" if column in ["primary_product", "petrochemical_product", "ff_infrastructure_production","other_fossil"]
+                    className=f"classification-badge classification-brown" if column in ["primary_product", "petrochemical_product", "infrastructure_production","other_fossil"]
                     else f"classification-badge classification-green",
-                    title=row['ff_categories_explanation'] if column in ["primary_product", "petrochemical_product", "ff_infrastructure_production"] else row['green_categories_explanation']
+                    title=row['ff_categories_explanation'] if column in ["primary_product", "petrochemical_product", "infrastructure_production"] else row['green_categories_explanation']
                 )
                 for column in [
-                    "primary_product", "petrochemical_product", "ff_infrastructure_production", "other_fossil",
-                    "renewable_energy", "emissions_reduction", "false_solutions", "recycling", "other_green"
+                    "primary_product", "petrochemical_product", "infrastructure_production", "fossil_fuel_other",
+                    "decreasing_emissions", "viable_solutions", "false_solutions", "recycling_waste_management", "nature_animal_references", "generic_environmental_references", "green_other"
                 ]
                 if row[column] == 1  # Only include badges for columns with a value of 1
             ]

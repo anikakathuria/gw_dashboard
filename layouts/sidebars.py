@@ -32,9 +32,9 @@ def create_sidebars(data):
         tuple: A tuple containing the three sidebars (social_sidebar, analytics_sidebar, about_sidebar).
     """
     # Get unique companies and channels
-    companies = sorted(data['company'].unique())
+    companies = sorted(data['company'].dropna().unique())
     company_channels = {
-        company: sorted(data[data['company'] == company]['search_data_fields.channel_data.channel_name'].unique())
+        company: sorted(data[data['company'] == company]['attributes.search_data_fields.channel_data.channel_name'].unique())
         for company in companies
     }
     
@@ -68,8 +68,8 @@ def create_sidebars(data):
         html.Label("Date Range", style={"font-weight": "500", "margin-bottom": "8px"}),
         dcc.DatePickerRange(
             id='date_range',
-            start_date=data['published_at'].min().strftime('%Y-%m-%d'),
-            end_date=data['published_at'].max().strftime('%Y-%m-%d'),
+            start_date=data['attributes.published_at'].min().strftime('%Y-%m-%d'),
+            end_date=data['attributes.published_at'].max().strftime('%Y-%m-%d'),
             display_format='YYYY-MM-DD',
             style={"margin-bottom": "20px", "width": "100%"}
         ),
@@ -120,9 +120,9 @@ def create_sidebars(data):
         html.Label("Platforms", style={"font-weight": "500", "margin-bottom": "8px"}),
         dcc.Dropdown(
             id="platform_filter",
-            options=[{"label": p, "value": p} for p in sorted(data['search_data_fields.platform_name'].unique())],
+            options=[{"label": p, "value": p} for p in sorted(data['attributes.search_data_fields.platform_name'].unique())],
             multi=True,
-            value=[p for p in sorted(data['search_data_fields.platform_name'].unique())],
+            value=[p for p in sorted(data['attributes.search_data_fields.platform_name'].unique())],
             style={"margin-bottom": "20px"}
         ),
         html.Div(id="classification_filter", children=[
@@ -150,7 +150,7 @@ def create_sidebars(data):
                     options=[
                         {"label": "Primary Product", "value": "primary_product"},
                         {"label": "Petrochemical Product", "value": "petrochemical_product"},
-                        {"label": "Fossil Fuel Infrastructure", "value": "ff_infrastructure_production"},
+                        {"label": "Fossil Fuel Infrastructure", "value": "infrastructure_production"},
                         {"label": "Other Fossil", "value": "other_fossil"}
                     ],
                     value=[],
@@ -163,10 +163,12 @@ def create_sidebars(data):
                 dcc.Checklist(
                     id="social_green_subcategories",
                     options=[
-                        {"label": "Renewable Energy", "value": "renewable_energy"},
-                        {"label": "Emissions Reduction", "value": "emissions_reduction"},
+                        {"label": "Decreasing Emissions", "value": "decreasing_emissions"},
+                        {"label": "Viable Solutions", "value": "viable_solutions"},
                         {"label": "False Solutions", "value": "false_solutions"},
-                        {"label": "Recycling", "value": "recycling"},
+                        {"label": "Recycling & Waste Management", "value": "recycling_waste_management"},
+                        {"label": "Nature & Animal References", "value": "nature_animal_references"},
+                        {"label": "Generic Environmental References", "value": "generic_environmental_references"},
                         {"label": "Other Green", "value": "other_green"}
                     ],
                     value=[],
@@ -218,8 +220,8 @@ def create_sidebars(data):
         html.Label("Date Range", style={"font-weight": "500", "margin-bottom": "8px"}),
         dcc.DatePickerRange(
             id='analytics_date_range',
-            start_date=data['published_at'].min().strftime('%Y-%m-%d'),
-            end_date=data['published_at'].max().strftime('%Y-%m-%d'),
+            start_date=data['attributes.published_at'].min().strftime('%Y-%m-%d'),
+            end_date=data['attributes.published_at'].max().strftime('%Y-%m-%d'),
             display_format='YYYY-MM-DD',
             style={"margin-bottom": "20px", "width": "100%"}
         ),
@@ -234,9 +236,9 @@ def create_sidebars(data):
          html.Label("Platforms", style={"font-weight": "500", "margin-bottom": "8px"}),
         dcc.Dropdown(
             id="analytics_platform_filter",
-            options=[{"label": p, "value": p} for p in sorted(data['search_data_fields.platform_name'].unique())],
+            options=[{"label": p, "value": p} for p in sorted(data['attributes.search_data_fields.platform_name'].unique())],
             multi=True,
-            value=[p for p in sorted(data['search_data_fields.platform_name'].unique())],
+            value=[p for p in sorted(data['attributes.search_data_fields.platform_name'].unique())],
             style={"margin-bottom": "20px"}
         ),
         # Subcategory filters

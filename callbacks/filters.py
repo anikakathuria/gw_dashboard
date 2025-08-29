@@ -31,7 +31,7 @@ def register_filter_callbacks(app, data):
         
         channels = []
         for company in selected_companies:
-            company_channels = data[data['company'] == company]['search_data_fields.channel_data.channel_name'].unique()
+            company_channels = data[data['company'] == company]['attributes.search_data_fields.channel_data.channel_name'].unique()
             channels.extend(company_channels)
         
         channels = sorted(channels)
@@ -58,7 +58,7 @@ def register_filter_callbacks(app, data):
         
         channels = []
         for company in selected_companies:
-            company_channels = data[data['company'] == company]['search_data_fields.channel_data.channel_name'].unique()
+            company_channels = data[data['company'] == company]['attributes.search_data_fields.channel_data.channel_name'].unique()
             channels.extend(company_channels)
         
         channels = sorted(channels)
@@ -160,16 +160,18 @@ def register_filter_callbacks(app, data):
         if n_clicks is None:
             return dash.no_update
         
+        
         companies = sorted(data['company'].unique())
-        platforms = sorted(data['search_data_fields.platform_name'].unique())
+        print(companies)
+        platforms = sorted(data['attributes.search_data_fields.platform_name'].unique())
         
         return (
             "",  # keyword_search
             "compare_posts",  # view_toggle
             "green",  # left_view
             "brown",  # right_view
-            data['published_at'].min().strftime('%Y-%m-%d'),  # date_range start
-            data['published_at'].max().strftime('%Y-%m-%d'),  # date_range end
+            data['attributes.published_at'].min().strftime('%Y-%m-%d'),  # date_range start
+            data['attributes.published_at'].max().strftime('%Y-%m-%d'),  # date_range end
             companies,  # company_filter
             platforms,  # platform_filter
             ["green", "brown", "green_brown", "misc"],  # classification_dropdown
@@ -209,11 +211,11 @@ def register_filter_callbacks(app, data):
             return dash.no_update
         
         companies = sorted(data['company'].unique())
-        platforms = sorted(data['search_data_fields.platform_name'].unique())
+        platforms = sorted(data['attributes.search_data_fields.platform_name'].unique())
         
         return (
-            data['published_at'].min().strftime('%Y-%m-%d'),  # date_range start
-            data['published_at'].max().strftime('%Y-%m-%d'),  # date_range end
+            data['attributes.published_at'].min().strftime('%Y-%m-%d'),  # date_range start
+            data['attributes.published_at'].max().strftime('%Y-%m-%d'),  # date_range end
             companies,  # company_filter
             platforms,  # platform_filter
             "all",  # uniqueness_toggle

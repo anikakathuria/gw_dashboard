@@ -6,18 +6,15 @@ from plotly.subplots import make_subplots
 
 def plot_time_trends(labeled_data, codebook, color_scheme):
     # Convert 'published_at' to datetime
-    labeled_data['published_at'] = pd.to_datetime(labeled_data['published_at'])
 
     # Determine year range for plotting
-    min_year = labeled_data['published_at'].dt.year.min()
-    max_year = labeled_data['published_at'].dt.year.max()
+    min_year = labeled_data['attributes.published_at'].dt.year.min()
+    max_year = labeled_data['attributes.published_at'].dt.year.max()
     plot_range = (min_year - 0.5, max_year + 0.5)
     year_breaks = list(range(min_year, max_year + 1))
 
     # Prepare data with common transformations
     df = labeled_data.copy()
-    df['green_brown'] = df.apply(lambda row: 'brown' if row['fossil_fuel'] else 'green' if row['green'] else 'misc', axis=1)
-    df['year'] = df['published_at'].dt.year
 
     # Time trends plot
     time_green_brown = (
