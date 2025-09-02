@@ -89,7 +89,6 @@ def create_post_component(row):
             style={
                 "width": f"{width}",
                 "height": f"{height}", 
-                "background-color": f"{border_color}",
                 "display": "block", 
             },
             # Add all necessary permissions to the sandbox
@@ -97,7 +96,6 @@ def create_post_component(row):
         )
     ], style={
         "width": f"{width}",
-        "background-color": f"{border_color}",
         "position": "relative",
     })
     
@@ -111,23 +109,22 @@ def create_post_component(row):
             "align-items": "flex-start",  # Changed from center to flex-start
             "padding": "0",
             "margin": "0",
-            "background-color": f"{border_color}",
             "height": "auto"  # Allow container to grow
         }),
         
-        # Keep the original footers
-        html.Div([
-            html.Span(
-                classification_labels[row['green_brown']].title(),
-                className=f"classification-badge {classification_class}",
-                title=row['green_label_explanation'],
-                style={"font-size": "14px"}
-            ),
-        ], className="post-footer-1",  style={
-            "background-color": f"{border_color}",
-            "padding": "12px 16px",
-            "text-align": "center",
-        }),
+        # # Keep the original footers
+        # html.Div([
+        #     html.Span(
+        #         classification_labels[row['green_brown']].title(),
+        #         className=f"classification-badge {classification_class}",
+        #         title=row['green_label_explanation'],
+        #         style={"font-size": "14px"}
+        #     ),
+        # ], className="post-footer-1",  style={
+        #     "background-color": f"{border_color}",
+        #     "padding": "12px 16px",
+        #     "text-align": "center",
+        # }),
         
         html.Div([
             *[
@@ -145,7 +142,6 @@ def create_post_component(row):
             ]
         ], className="post-footer-2")
     ], className="social-post", style={
-        "border": f"4px solid {border_color}",
         "padding": "0",  # Remove padding to make container match iframe size
         "width": post_width,  # Set width based on view mode
         "margin": "0 auto",

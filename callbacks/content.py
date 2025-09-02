@@ -125,7 +125,6 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                 "generic_environmental_references": "generic_environmental_references" in sm_green_subcategories,
                 "other_green": "green_other" in sm_green_subcategories
             }
-            print(len(filtered_data))
         else:  # analytics
             start_date, end_date = an_start, an_end
             companies, entities, platforms = an_companies, an_entities, an_platforms
@@ -147,7 +146,6 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                 "other_green": "green_other" in an_green_subcategories
             }
         
-        print(len(filtered_data))
         # Apply uniqueness filter
         if uniqueness == "unique":
             filtered_data = url_deduplicate(filtered_data, 'complete_post_text')
@@ -162,7 +160,6 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
         
         #Apply date filter
         if start_date and end_date:
-            print("Length of filtered point 0: " + str(len(filtered_data)))
             filtered_data = filtered_data[
                 (filtered_data['attributes.published_at'] >= start_date) & 
                 (filtered_data['attributes.published_at'] <= end_date)
@@ -170,27 +167,22 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
         
         #Apply company filter
         if companies:
-            print("Length of filtered point 1: " + str(len(filtered_data)))
             filtered_data = filtered_data[filtered_data['company'].isin(companies)]
         
         #Apply entity filter
         if entities:
-            print("Length of filtered point 2: " + str(len(filtered_data)))
             filtered_data = filtered_data[filtered_data['attributes.search_data_fields.channel_data.channel_name'].isin(entities)]
         
         # Apply platform filter
         if platforms:
-            print("Length of filtered point 3: " + str(len(filtered_data)))
             filtered_data = filtered_data[filtered_data['attributes.search_data_fields.platform_name'].isin(platforms)]
         
         # Apply subcategory filters
         for subcategory, is_active in subcategory_filters.items():
-            print("Length of filtered point 4: " + str(len(filtered_data)))
             if is_active:
                 filtered_data = filtered_data[filtered_data[subcategory] == 1]
         
         if tab_name == "social_media":
-            print("Length of filtered point 5: " + str(len(filtered_data)))
             if classifications:
                 filtered_data = filtered_data[filtered_data['green_brown'].isin(classifications)]
 

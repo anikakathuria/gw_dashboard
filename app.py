@@ -4,6 +4,7 @@ import pandas as pd
 import json
 import requests
 from flask import Response, request
+from functools import lru_cache
 from bs4 import BeautifulSoup
 
 # Import layouts
@@ -118,8 +119,8 @@ register_filter_callbacks(app, data)
 register_navigation_callbacks(app)
 register_content_callbacks(app, data, codebook, green_brown_colors, classification_labels)
 
-@app.server.route('/junkipedia_proxy/<post_id>')
-def junkipedia_proxy(post_id):
+@lru_cache(maxsize=128)
+def fetch_junkipedia_post_html(post_id):
     """
     Proxy for Junkipedia posts. This function fetches the post from Junkipedia and returns a minimal HTML embedding
       with the post content. This is used to display the post in an iframe.
@@ -132,7 +133,7 @@ def junkipedia_proxy(post_id):
     """
     resp = requests.get(f"https://www.junkipedia.org/posts/{post_id}")
     if resp.status_code != 200:
-        return Response("…", status=resp.status_code)
+        return None, resp.status_code
 
     soup = BeautifulSoup(resp.text, 'html.parser')
 
@@ -169,6 +170,13 @@ def junkipedia_proxy(post_id):
       </body>
     </html>
     """
+    return html, 200
+
+@app.server.route('/junkipedia_proxy/<post_id>')
+def junkipedia_proxy(post_id):
+    html, status = fetch_junkipedia_post_html(post_id)
+    if html is None:
+        return Response("…", status=status)
     return Response(html, content_type='text/html')
 
 if __name__ == "__main__":
