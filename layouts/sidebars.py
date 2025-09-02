@@ -113,10 +113,15 @@ def create_sidebars(data):
         dcc.Dropdown(
             id="company_filter",
             options=[{"label": c, "value": c} for c in companies],
+            value=companies,            # preselect all
             multi=True,
-            value=companies,
+            searchable=True,
+            placeholder="Select companies…",
+            persistence=True,
+            persistence_type="session",
             style={"margin-bottom": "20px"}
         ),
+
         html.Label("Platforms", style={"font-weight": "500", "margin-bottom": "8px"}),
         dcc.Dropdown(
             id="platform_filter",

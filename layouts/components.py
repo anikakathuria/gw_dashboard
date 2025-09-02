@@ -20,41 +20,60 @@ classification_labels = {
 
 # Define the banner component of the dashboard
 banner = html.Div([
-    html.Div("CLAIMS", style={
-        "font-size": "40px",
-        "font-weight": "bold",
-        "color": "white",
-        "text-orientation": "upright",
-        "height": "10%",
-        "display": "flex",
-        "align-items": "left",
-        "justify-content": "left",
-        "padding-right": "16px",
-        "margin-bottom": "3px"
-    }),
+    # LEFT: existing title/subtitle lockup (unchanged)
     html.Div([
-        html.Div("Climate Language and", style={
-            "font-size": "18px",
-            "font-weight": "500",
+        html.Div("CLAIMS", style={
+            "font-size": "40px",
+            "font-weight": "bold",
             "color": "white",
-            "margin-bottom": "4px"
-        }),
-        html.Div("Influence Monitoring System", style={
-            "font-size": "18px",
-            "font-weight": "500",
-            "color": "white",
+            "text-orientation": "upright",
+            "height": "10%",
+            "display": "flex",
+            "align-items": "left",
+            "justify-content": "left",
+            "padding-right": "16px",
             "margin-bottom": "3px"
+        }),
+        html.Div([
+            html.Div("Climate Language and", style={
+                "font-size": "18px",
+                "font-weight": "500",
+                "color": "white",
+                "margin-bottom": "4px"
+            }),
+            html.Div("Influence Monitoring System", style={
+                "font-size": "18px",
+                "font-weight": "500",
+                "color": "white",
+                "margin-bottom": "3px"
+            })
+        ], style={
+            "display": "flex",
+            "flex-direction": "column",
+            "justify-content": "left",
+            "margin-left": "16px"
         })
-    ], style={
-        "display": "flex",
-        "flex-direction": "column",
-        "justify-content": "left",
-        "margin-left": "16px"
-    })
+    ], style={"display": "flex", "align-items": "center"}),
+
+    # RIGHT: tabs now live in the banner
+    dcc.Tabs(
+        id="tabs",
+        value="social_media",
+        parent_className="tabs-on-banner",
+        className="tabs-on-banner-inner",
+        children=[
+            dcc.Tab(label="Post Feed", value="social_media"),
+            dcc.Tab(label="Analytics", value="analytics"),
+            dcc.Tab(label="About", value="about"),
+        ],
+    )
 ], className="banner", style={
     "display": "flex",
-    "align-items": "left",
-    "height": "10%"
+        "align-items": "center",
+        "justify-content": "space-between",
+        "height": "auto",
+        "background-color": "#f5f5f5",  # light grey
+        "padding": "0 20px"
 })
 
 def create_post_component(row):
@@ -73,7 +92,7 @@ def create_post_component(row):
     border_color = green_brown_colors.get(row['green_brown'], "#ddd")
     
     # Set width based on view mode
-    post_width = "80%"
+    post_width = "100%"
     
     # Get the post ID from the data
     # Assuming the post ID is in a column called 'post_id'
@@ -88,7 +107,7 @@ def create_post_component(row):
                 "width": "100%",
                 "height": "575px", 
                 "border-radius": "8px",
-                "background-color": f"{border_color}",
+                "background-color": "transparent",
                 "display": "block",
                 "margin-bottom": "-60px"  # This cuts off the bottom 
             },
@@ -98,7 +117,7 @@ def create_post_component(row):
     ], style={
         "width": "100%",
         "border-radius": "8px",
-        "background-color": f"{border_color}",
+        "background-color": "transparent",
         "position": "relative",
         "height": "auto",  # Allow container to grow
         "overflow": "hidden"  # Only hide overflow at the bottom
@@ -114,24 +133,9 @@ def create_post_component(row):
             "align-items": "flex-start",  # Changed from center to flex-start
             "padding": "0",
             "margin": "0",
-            "background-color": f"{border_color}",
+            "background-color": "transparent",
             "height": "auto"  # Allow container to grow
         }),
-        
-        # Keep the original footers
-        html.Div([
-            html.Span(
-                classification_labels[row['green_brown']].title(),
-                className=f"classification-badge {classification_class}",
-                title=row['green_label_explanation'],
-                style={"font-size": "14px"}
-            ),
-        ], className="post-footer-1",  style={
-            "background-color": f"{border_color}",
-            "padding": "12px 16px",
-            "text-align": "center",
-        }),
-        
         html.Div([
             *[
                 html.Span(
@@ -149,12 +153,15 @@ def create_post_component(row):
         ], className="post-footer-2")
     ], className="social-post", style={
         "border": f"4px solid {border_color}",
-        "padding": "0",  # Remove padding to make container match iframe size
-        "width": post_width,  # Set width based on view mode
-        "margin": "0 auto",
-        "height": "auto",  # Allow container to grow
+        "padding": "0",
+        "width": post_width,
+        "margin": "0 auto 24px",
+        "height": "auto",
         "display": "flex",
-        "flex-direction": "column"
+        "flexDirection": "column",
+        "backgroundColor": "white",
+        "borderRadius": "12px",
+        "boxShadow": "0 6px 20px 4px rgba(0, 0, 0, 0.35)"
     })
 
 """ 
