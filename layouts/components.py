@@ -20,42 +20,60 @@ classification_labels = {
 
 # Define the banner component of the dashboard
 banner = html.Div([
-    html.Div("CLAIMS", style={
-        "font-size": "40px",
-        "font-weight": "bold",
-        "color": "white",
-        "text-orientation": "upright",
-        "height": "10%",
-        "display": "flex",
-        "align-items": "left",
-        "justify-content": "left",
-        "padding-right": "16px",
-        "margin-bottom": "3px"
-    }),
     html.Div([
-        html.Div("Climate Language and", style={
-            "font-size": "18px",
-            "font-weight": "500",
-            "color": "white",
-            "margin-bottom": "4px"
-        }),
-        html.Div("Influence Monitoring System", style={
-            "font-size": "18px",
-            "font-weight": "500",
-            "color": "white",
-            "margin-bottom": "3px"
-        })
-    ], style={
+        html.Div("CLAIMS", style={
+                "font-size": "40px",
+                "font-weight": "bold",
+                "color": "white",
+                "text-orientation": "upright",
+                "height": "10%",
+                "display": "flex",
+                "align-items": "left",
+                "justify-content": "left",
+                "padding-right": "16px",
+                "margin-bottom": "3px"
+            }),
+            html.Div([
+                html.Div("Climate Language and", style={
+                    "font-size": "18px",
+                    "font-weight": "500",
+                    "color": "white",
+                    "margin-bottom": "4px"
+                }),
+                html.Div("Influence Monitoring System", style={
+                    "font-size": "18px",
+                    "font-weight": "500",
+                    "color": "white",
+                    "margin-bottom": "3px"
+                })
+            ], style={
+                "display": "flex",
+                "flex-direction": "column",
+                "justify-content": "left",
+                "margin-left": "16px"
+            })
+        ], style={"display": "flex", "align-items": "center"}),
+
+        # RIGHT: tabs now live in the banner
+        dcc.Tabs(
+            id="tabs",
+            value="social_media",
+            parent_className="tabs-on-banner",
+            className="tabs-on-banner-inner",
+            children=[
+                dcc.Tab(label="Post Feed", value="social_media"),
+                dcc.Tab(label="Analytics", value="analytics"),
+                dcc.Tab(label="About", value="about"),
+            ],
+        )
+    ], className="banner", style={
         "display": "flex",
-        "flex-direction": "column",
-        "justify-content": "left",
-        "margin-left": "16px"
+        "align-items": "center",
+        "justify-content": "space-between",
+        "height": "auto",
+        "background-color": "#f5f5f5",  # light grey
+        "padding": "0 20px"
     })
-], className="banner", style={
-    "display": "flex",
-    "align-items": "left",
-    "height": "auto"
-})
 
 def create_post_component(row):
     """
@@ -90,6 +108,7 @@ def create_post_component(row):
                 "width": f"{width}",
                 "height": f"{height}", 
                 "display": "block", 
+                "background-color": "transparent"
             },
             # Add all necessary permissions to the sandbox
             sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-downloads"
