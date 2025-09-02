@@ -3,38 +3,14 @@ from dash import html, dcc
 def create_sidebars(data):
     """
     Creates the sidebars for the dashboard for each of the three tabs: Post Feed, Analytics, and About.
-    The Post Feed tab contains the following filters:
-    - Keyword Search
-    - Date Range
-    - Companies
-    - Platforms
-    - Channels
-    - Message Type
-    - Classification
-    - Subcategories
-    - Reset button
-
-    The Analytics tab contains the following filters:
-    - Date Range
-    - Companies
-    - Platforms
-    - Channels
-    - Message Type
-    - Classification
-    - Subcategories
-    - Reset button
-
-    The About tab contains a brief description.
-
-    Arguments:
-        data (pd.DataFrame): The dataframe containing the data to be displayed in the dashboard.
-    Returns:
-        tuple: A tuple containing the three sidebars (social_sidebar, analytics_sidebar, about_sidebar).
+    Returns a tuple: (social_sidebar, analytics_sidebar, about_sidebar).
     """
     # Get unique companies and channels
     companies = sorted(data['company'].dropna().unique())
     company_channels = {
-        company: sorted(data[data['company'] == company]['attributes.search_data_fields.channel_data.channel_name'].unique())
+        company: sorted(
+            data[data['company'] == company]['attributes.search_data_fields.channel_data.channel_name'].unique()
+        )
         for company in companies
     }
     
@@ -57,7 +33,10 @@ def create_sidebars(data):
                 "cursor": "pointer"
             }
         ),
-        
+
+        # >>> Badge mount point for post count (updated by content callback) <<<
+        html.Div(id="post_count_badge", className="post-count-badge", style={"marginBottom": "12px"}),
+
         html.Label("Keyword Search", style={"font-weight": "500", "margin-bottom": "8px"}),
         dcc.Input(
             id="keyword_search",
@@ -200,7 +179,7 @@ def create_sidebars(data):
     # Analytics Sidebar
     analytics_sidebar = html.Div([
         html.H3("Analytics Filters", style={"margin-bottom": "14px", "color": "#1a237e", "font-weight": "600"}),
-        
+
         # Reset button
         html.Button(
             "Reset All Filters",
@@ -216,7 +195,9 @@ def create_sidebars(data):
                 "cursor": "pointer"
             }
         ),
-        
+
+        html.Div(id="analytics_post_count_badge", className="post-count-badge", style={"marginBottom": "12px"}),
+
         html.Label("Date Range", style={"font-weight": "500", "margin-bottom": "8px"}),
         dcc.DatePickerRange(
             id='analytics_date_range',
@@ -233,7 +214,7 @@ def create_sidebars(data):
             value=companies,
             style={"margin-bottom": "20px"}
         ),
-         html.Label("Platforms", style={"font-weight": "500", "margin-bottom": "8px"}),
+        html.Label("Platforms", style={"font-weight": "500", "margin-bottom": "8px"}),
         dcc.Dropdown(
             id="analytics_platform_filter",
             options=[{"label": p, "value": p} for p in sorted(data['attributes.search_data_fields.platform_name'].unique())],

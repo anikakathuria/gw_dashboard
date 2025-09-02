@@ -5,24 +5,18 @@ body {
   padding-top: 64px;
 }
 .banner {
-  background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%);
-  color: white;
+  background: #f5f5f5;        
+  color: #383838;                   
   padding: 16px 24px;
-  text-align: left;
-  font-size: 24px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  top: 0;
-  left: 0;
-  right: 0;
+  position: fixed;
+  top: 0; left: 0; right: 0;
   z-index: 1000;
   height: 64px;
   display: flex;
-  align-items: left;
-  justify-content: left;
+  align-items: center;           
+  justify-content: space-between;
   box-sizing: border-box;
-  position: fixed;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
 }
 .sidebar {
   width: 300px;
@@ -48,7 +42,7 @@ body {
   padding: 16px;
 }
 .social-post {
-  height: auto; /* Allow posts to grow with content */
+  height: auto; 
   display: flex;
   flex-direction: column;
 }
@@ -70,13 +64,11 @@ body {
   align-items: flex-start; /* Changed from center to flex-start */
   height: auto; /* Allow content to determine height */
 }
-
 .post-content iframe {
   width: 100%;
   border: none;
   display: block;
 }
-
 /* Add this new style for iframe container */
 .post-content iframe-container {
   width: 100%;
@@ -116,7 +108,7 @@ body {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
   font-size: 18px;
   font-weight: 600;
-  color: #000000;
+  color: #383838;
   text-align: center;
   border: 2px solid #e0e0e0;
 }
@@ -255,4 +247,33 @@ body {
 .reset-button:hover {
   background-color: #e0e0e0;
   cursor: pointer;
+}
+
+/* Tabs inside the banner */
+.tabs-on-banner { 
+  display: flex; 
+  align-items: flex-end; 
+}
+.tabs-on-banner-inner { 
+  background: transparent; 
+  border: none; 
+}
+
+.tabs-on-banner-inner .tab {
+  min-width: 160px;        
+  padding: 12px 20px;      
+  text-align: center;     
+  flex: none;              
+}
+
+.tabs-on-banner-inner .tab label,
+.tabs-on-banner-inner .tab {
+  color: #383838;      
+  font-weight: 500;
+}
+
+/* When a tab is selected */
+.tabs-on-banner-inner .tab--selected {
+  border-bottom: 3px solid #383838;  
+  color: #000000;                   
 }

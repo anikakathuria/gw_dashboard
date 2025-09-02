@@ -24,7 +24,7 @@ banner = html.Div([
         html.Div("CLAIMS", style={
                 "font-size": "40px",
                 "font-weight": "bold",
-                "color": "white",
+                "color": "#383838",
                 "text-orientation": "upright",
                 "height": "10%",
                 "display": "flex",
@@ -37,13 +37,13 @@ banner = html.Div([
                 html.Div("Climate Language and", style={
                     "font-size": "18px",
                     "font-weight": "500",
-                    "color": "white",
+                    "color": "#383838",
                     "margin-bottom": "4px"
                 }),
-                html.Div("Influence Monitoring System", style={
+                html.Div("Image Monitoring System", style={
                     "font-size": "18px",
                     "font-weight": "500",
-                    "color": "white",
+                    "color": "#383838",
                     "margin-bottom": "3px"
                 })
             ], style={
@@ -71,7 +71,7 @@ banner = html.Div([
         "align-items": "center",
         "justify-content": "space-between",
         "height": "auto",
-        "background-color": "#f5f5f5",  # light grey
+        "background-color": "#f5f5f5",  
         "padding": "0 20px"
     })
 

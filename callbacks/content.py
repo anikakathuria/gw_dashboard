@@ -9,21 +9,13 @@ from util.plot_green_share import plot_green_share
 def register_content_callbacks(app, data, codebook, green_brown_colors, classification_labels):
     """
     Register callbacks for the content section of the dashboard.
-    This function handles the content rendering of different tabs (Social Media, Analytics, About)
-    and applies the necessary filters based on user input.
-
-    Arguments:
-        app: The Dash app instance.
-        data: The DataFrame containing the social media data.
-        codebook: The codebook for the data.
-        green_brown_colors: Dictionary mapping classification labels to colors.
-        classification_labels: Dictionary mapping classification labels to their display names.
-
-    Returns:
-        None
     """
     @app.callback(
-        Output("content", "children"),
+        [
+            Output("content", "children"),
+            Output("post_count_badge", "children"),
+            Output("analytics_post_count_badge", "children"),
+        ], 
         [
             Input("tabs", "value"),
             Input('current_page', 'data'),
@@ -67,40 +59,6 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
         an_start, an_end, an_companies, an_entities, an_platforms, an_uniqueness,
         an_fossil_subcategories, an_green_subcategories
     ):
-        """
-        Render the content of the selected tab based on user inputs and filters.
-        This function filters the data based on the selected criteria and generates the appropriate content.
-        It handles the rendering of social media posts, analytics plots, and the about section.
-
-        Arguments:
-            tab_name (str): The name of the selected tab.
-            current_page (int): The current page number for pagination.
-            sm_start (str): Start date for social media filtering.
-            sm_end (str): End date for social media filtering.
-            sm_companies (list): List of selected companies for social media filtering.
-            sm_entities (list): List of selected entities for social media filtering.
-            sm_platforms (list): List of selected platforms for social media filtering.
-            sm_classifs (list): List of selected classifications for social media filtering.
-            view_toggle (str): The current view toggle state.
-            left_view (str): The left view classification for comparison.
-            right_view (str): The right view classification for comparison.
-            sm_uniqueness (str): Uniqueness filter for social media posts.
-            keyword_search (str): Keyword search string for filtering posts.
-            sm_fossil_subcategories (list): Selected fossil subcategories for social media filtering.
-            sm_green_subcategories (list): Selected green subcategories for social media filtering.
-
-            an_start (str): Start date for analytics filtering.
-            an_end (str): End date for analytics filtering.
-            an_companies (list): List of selected companies for analytics filtering.
-            an_entities (list): List of selected entities for analytics filtering.
-            an_platforms (list): List of selected platforms for analytics filtering.
-            an_uniqueness (str): Uniqueness filter for analytics posts.
-            an_fossil_subcategories (list): Selected fossil subcategories for analytics filtering.
-            an_green_subcategories (list): Selected green subcategories for analytics filtering.
-
-        Returns:
-            html.Div: The content to be displayed in the selected tab.
-        """
         filtered_data = data.copy()
         print(len(filtered_data))
         
@@ -158,18 +116,18 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                 filtered_data['attributes.complete_post_text'].str.lower().str.contains(keyword_lower, na=False)
             ]
         
-        #Apply date filter
+        # Apply date filter
         if start_date and end_date:
             filtered_data = filtered_data[
                 (filtered_data['attributes.published_at'] >= start_date) & 
                 (filtered_data['attributes.published_at'] <= end_date)
             ]
         
-        #Apply company filter
+        # Apply company filter
         if companies:
             filtered_data = filtered_data[filtered_data['company'].isin(companies)]
         
-        #Apply entity filter
+        # Apply entity filter
         if entities:
             filtered_data = filtered_data[filtered_data['attributes.search_data_fields.channel_data.channel_name'].isin(entities)]
         
@@ -194,10 +152,8 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                 start = current_page * posts_per_page
                 end = start + posts_per_page
                 
-                # Pass the view_toggle to create_post_component
                 posts = [create_post_component(row) for _, row in filtered_data.iloc[start:end].iterrows()]
             
-                # Update pagination buttons visibility instead of recreating them
                 pagination_buttons = html.Div([
                     html.Button(
                         '← Previous',
@@ -217,23 +173,14 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                     "text-align": "center",
                     "margin-top": "32px",
                     "padding-bottom": "32px",
-                    "display": "block"  # Make sure buttons are visible
+                    "display": "block"
                 })
                 
-                post_count = html.Div([
-                    "Showing ",
-                    html.Strong(f"{len(filtered_data)}"),
-                    " posts"
-                ], className="post-count")
-
-                # Get every other item starting with the first item
+                # Split into two columns
                 posts_first_half = posts[::2]
-
-                # Get every other item starting with the second item
                 posts_second_half = posts[1::2]
                 
-                return html.Div([
-                    post_count,
+                content_div = html.Div([
                     html.Div([
                         html.Div([
                             html.Div(posts_first_half, className="posts-grid")
@@ -244,6 +191,14 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                     ]),
                     pagination_buttons
                 ])
+
+                sidebar_badge = html.Div([
+                    "Showing ",
+                    html.Strong(f"{len(filtered_data)}"),
+                    " posts"
+                ], className="post-count")
+
+                return content_div, sidebar_badge, ""
             
             elif view_toggle == "compare_posts":
                 # Comparison View with pagination
@@ -254,13 +209,11 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                 start = current_page * posts_per_page
                 end = start + posts_per_page
                 
-                # Pass the view_toggle to create_post_component
                 left_posts = [create_post_component(row) for _, row in left_data.iloc[start:end].iterrows()]
                 right_posts = [create_post_component(row) for _, row in right_data.iloc[start:end].iterrows()]
                 
                 max_posts = max(len(left_data), len(right_data))
                 
-                # Update pagination buttons visibility instead of recreating them
                 pagination_buttons = html.Div([
                     html.Button(
                         '← Previous',
@@ -280,16 +233,10 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                     "text-align": "center",
                     "margin-top": "32px",
                     "padding-bottom": "32px",
-                    "display": "block"  # Make sure buttons are visible
+                    "display": "block"
                 })
                 
-                post_counts = html.Div([
-                    "Showing ",
-                    f" {len(left_data)+len(right_data)} posts"
-                ], className="post-count")
-                
-                return html.Div([
-                    post_counts,
+                content_div = html.Div([
                     html.Div([
                         html.Div([
                             html.H3(f"{classification_labels[left_view]} Posts", className="comparison-title"),
@@ -302,6 +249,16 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                     ]),
                     pagination_buttons
                 ])
+
+                left_n = len(left_data)
+                right_n = len(right_data)
+                sidebar_badge = html.Div([
+                    "Showing ",
+                    html.Strong(f"{left_n + right_n}"),
+                    f" posts ({classification_labels[left_view]}: {left_n} | {classification_labels[right_view]}: {right_n})"
+                ], className="post-count")
+
+                return content_div, sidebar_badge, ""
         
         elif tab_name == "analytics":
             # Generate overview plots using the Plotly-based functions
@@ -309,20 +266,13 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
             raw_greenwashing_fig = plot_combined_greenwashing_scores(filtered_data)
             green_share_fig = plot_green_share(filtered_data)
             
-            post_count = html.Div([
-                "Analysis based on ",
-                html.Strong(f"{len(filtered_data)}"),
-                " posts"
-            ], className="post-count")
-            
-            # Add hidden pagination buttons for analytics tab to ensure they're always in the DOM
+            # Hidden pagination buttons for analytics tab (keep DOM)
             hidden_pagination = html.Div([
                 html.Button('← Previous', id='prev_page', n_clicks=0, className="pagination-button"),
                 html.Button('Next →', id='next_page', n_clicks=0, className="pagination-button")
             ], style={"display": "none"})
             
-            return html.Div([
-                post_count,
+            content_div = html.Div([
                 # Overview Section
                 html.Div([
                     html.H2("Post Classification Overview", className="analytics-header"),
@@ -389,19 +339,27 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                 hidden_pagination
 
             ], className="analytics-container")
+
+            analytics_badge = html.Div([
+                "Analysis based on ",
+                html.Strong(f"{len(filtered_data)}"),
+                " posts"
+            ], className="post-count")
+
+            return content_div, "", analytics_badge
             
         elif tab_name == "about":
             # Calculate dynamic values for the About section
             total_posts = len(data)
             platforms = ", ".join(sorted(data['attributes.search_data_fields.platform_name'].unique()))
             
-            # Add hidden pagination buttons for about tab to ensure they're always in the DOM
+            # Hidden pagination to keep DOM
             hidden_pagination = html.Div([
                 html.Button('← Previous', id='prev_page', n_clicks=0, className="pagination-button"),
                 html.Button('Next →', id='next_page', n_clicks=0, className="pagination-button")
             ], style={"display": "none"})
             
-            return html.Div([
+            content_div = html.Div([
                 # About Section
                 html.Div([
                     html.P([
@@ -431,10 +389,9 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                     html.P([
                         "The typology contains five \"green\" categories and four \"fossil fuel\" categories. Multiple labels can apply to the same post."
                     ], style={"font-size": "14px", "margin-bottom": "8px"}),
-                    # Placeholder for a diagram - you can add an image here
                     html.Div([
                         html.Img(
-                            src="/assets/codebook_diagram.png",  # Replace with actual image path
+                            src="/assets/codebook_diagram.png",
                             style={
                                 "max-width": "50%",
                                 "height": "20%",
@@ -450,83 +407,51 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
 
                     html.Ul([
                         html.Li([
-                    
-                    html.P([
-                        html.Strong("Green posts", style={"font-size": "14px"}),
-                        ": If CLAIMS assigns at least one Green label to a post, the post is coded as Green."
-                    ], style={"font-size": "14px", "margin-bottom": "8px"}),
-                    
-                    html.Ul([
+                            html.P([
+                                html.Strong("Green posts", style={"font-size": "14px"}),
+                                ": If CLAIMS assigns at least one Green label to a post, the post is coded as Green."
+                            ], style={"font-size": "14px", "margin-bottom": "8px"}),
+                            html.Ul([
+                                html.Li([html.Strong("Decreasing Emissions"), ": Positive or neutral references to greenhouse gas emissions reduction."]),
+                                html.Li([html.Strong("Renewables & Low-Carbon Technologies"), ": Positive or neutral references to renewable energy and/or other low-carbon technology solutions, such as solar, wind, or hydropower."]),
+                                html.Li([html.Strong("False Solutions"), ": Positive or neutral references to fossil-fuel-adjacent 'false solutions' to climate change, such as carbon capture, hydrogen, or \"clean\" methane."]),
+                                html.Li([html.Strong("Recycling & Waste Management"), ": Positive or neutral references to recycling and waste management efforts."]),
+                                html.Li([html.Strong("Other Green"), ": Other green messaging, such as nature and generic environmental references."])
+                            ], style={"font-size": "14px", "margin-bottom": "16px", "padding-left": "30px"})
+                        ]),
+
                         html.Li([
-                            html.Strong("Decreasing Emissions"),
-                            ": Positive or neutral references to greenhouse gas emissions reduction."
+                            html.P([
+                                html.Strong("Fossil Fuel posts"),
+                                ": If CLAIMS assigns at least one Fossil Fuel label to a post and no green labels, the post is coded as Fossil Fuel."
+                            ], style={"font-size": "14px", "margin-bottom": "8px"}),
+                            html.Ul([
+                                html.Li([html.Strong("Primary Product"), ": References to one or more fossil fuel primary products, such as coal, oil, or methane."]),
+                                html.Li([html.Strong("Petrochemical Product"), ": References to one or more petrochemical products, such as gasoline or lubricants."]),
+                                html.Li([html.Strong("Infrastructure & Production"), ": References to fossil fuel production, operations, and/or infrastructure, such as pipelines, oil fields, or refineries."]),
+                                html.Li([html.Strong("Other Fossil Fuel"), ": Other fossil fuel related messaging not captured by the labels above."])
+                            ], style={"font-size": "14px", "margin-bottom": "16px", "padding-left": "30px"})
+                        ]),
+
+                        html.Li([
+                            html.P([
+                                html.Strong("Miscellaneous posts"),
+                                ": Posts not assigned any Green or Fossil Fuel labels by CLAIMS are not relevant to climate change and are coded as Miscellaneous."
+                            ], style={"font-size": "14px", "margin-bottom": "16px"})
+                        ]),
+
+                        html.Li([
+                            html.P([
+                                html.Strong("Micro-scale greenwashing"),
+                                ": Micro-scale greenwashing is greenwashing at the level of an individual social media post. This reflects the fact that posts assigned both Fossil Fuel and Green labels by CLAIMS indicate efforts to greenwash messaging about fossil fuels."
+                            ], style={"font-size": "14px", "margin-bottom": "16px"})
                         ]),
                         html.Li([
-                            html.Strong("Renewables & Low-Carbon Technologies"),
-                            ": Positive or neutral references to renewable energy and/or other low-carbon technology solutions, such as solar, wind, or hydropower."
-                        ]),
-                        html.Li([
-                            html.Strong("False Solutions"),
-                            ": Positive or neutral references to fossil-fuel-adjacent \'false solutions\' to climate change, such as carbon capture, hydrogen, or \"clean\" methane."
-                        ]),
-                        html.Li([
-                            html.Strong("Recycling & Waste Management"),
-                            ": Positive or neutral references to recycling and waste management efforts."
-                        ]),
-                        html.Li([
-                            html.Strong("Other Green"),
-                            ": Other green messaging, such as nature and generic environmental references."
+                            html.P([
+                                html.Strong("Macro-scale greenwashing/Greenwashing Score"),
+                                ": Macro-scale greenwashing is greenwashing at the company-level. To measure macro-scale greenwashing, CDO has pioneered the first quantitative social media Greenwashing Score, which compares the prevalence of a company's green messaging to its actual climate mitigation investments. To calculate the Greenwashing Score, we first calculate the prevalence of green posts (% Green posts) among all climate-relevant posts (those labeled as Green or Fossil Fuel by CLAIMS). Next, we determine the company's spending on low-carbon technologies as a fraction of its total capital expenditures (% Green CAPEX). The Greenwashing Score is defined as % Green posts divided by % Green CAPEX, with values greater than 1 indicating macro-scale greenwashing."
+                            ], style={"font-size": "14px", "margin-bottom": "32px"})
                         ])
-                    ], style={"font-size": "14px", "margin-bottom": "16px", "padding-left": "30px"})
-                        ]),
-
-                    html.Li([
-                    
-                    html.P([
-                        html.Strong("Fossil Fuel posts"),
-                        ": If CLAIMS assigns at least one Fossil Fuel label to a post and no green labels, the post is coded as Fossil Fuel."
-                    ], style={"font-size": "14px", "margin-bottom": "8px"}),
-                    
-                    html.Ul([
-                        html.Li([
-                            html.Strong("Primary Product"),
-                            ": References to one or more fossil fuel primary products, such as coal, oil, or methane."
-                        ]),
-                        html.Li([
-                            html.Strong("Petrochemical Product"),
-                            ": References to one or more petrochemical products, such as gasoline or lubricants."
-                        ]),
-                        html.Li([
-                            html.Strong("Infrastructure & Production"),
-                            ": References to fossil fuel production, operations, and/or infrastructure, such as pipelines, oil fields, or refineries."
-                        ]),
-                        html.Li([
-                            html.Strong("Other Fossil Fuel"),
-                            ": Other fossil fuel related messaging not captured by the labels above."
-                        ])
-                    ], style={"font-size": "14px", "margin-bottom": "16px", "padding-left": "30px"})
-
-                    ]),
-
-                    html.Li([
-                    
-                    html.P([
-                        html.Strong("Miscellaneous posts"),
-                        ": Posts not assigned any Green or Fossil Fuel labels by CLAIMS are not relevant to climate change and are coded as Miscellaneous."
-                    ], style={"font-size": "14px", "margin-bottom": "16px"}) ]),
-
-                    html.Li([
-                    
-                    html.P([
-                        html.Strong("Micro-scale greenwashing"),
-                        ": Micro-scale greenwashing is greenwashing at the level of an individual social media post. This reflects the fact that posts assigned both Fossil Fuel and Green labels by CLAIMS indicate efforts to greenwash messaging about fossil fuels."
-                    ], style={"font-size": "14px", "margin-bottom": "16px"}) ]),
-                    html.Li([
-                    
-                    html.P([
-                        html.Strong("Macro-scale greenwashing/Greenwashing Score"),
-                        ": Macro-scale greenwashing is greenwashing at the company-level. To measure macro-scale greenwashing, CDO has pioneered the first quantitative social media Greenwashing Score, which compares the prevalence of a company's green messaging to its actual climate mitigation investments. To calculate the Greenwashing Score, we first calculate the prevalence of green posts (% Green posts) among all climate-relevant posts (those labeled as Green or Fossil Fuel by CLAIMS). Next, we determine the company's spending on low-carbon technologies as a fraction of its total capital expenditures (% Green CAPEX). The Greenwashing Score is defined as % Green posts divided by % Green CAPEX, with values greater than 1 indicating macro-scale greenwashing."
-                    ], style={"font-size": "14px", "margin-bottom": "32px"}) ])
                     ]),
                     
                     html.P([
@@ -543,3 +468,7 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                 hidden_pagination
                 
             ], className="analytics-container")
+
+            # For About, either show nothing or a dataset summary in the sidebar
+            sidebar_badge = ""  # or: html.Div(["Dataset size: ", html.Strong(f"{len(data)}"), " posts"], className="post-count")
+            return content_div, "", ""
