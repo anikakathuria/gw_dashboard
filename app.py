@@ -3,7 +3,7 @@ from dash import dcc, html
 import pandas as pd
 import json
 import requests
-from flask import Response, request
+from flask import Response
 from functools import lru_cache
 from bs4 import BeautifulSoup
 
@@ -18,7 +18,7 @@ from callbacks.navigation import register_navigation_callbacks
 from callbacks.content import register_content_callbacks
 
 # Import data processing
-from process_data import process_data_csv, process_data_json
+from process_data import process_data_json
 
 """
     This code sets up the dashboard, combining the layout, callbacks, and data processing.
@@ -67,8 +67,6 @@ app = dash.Dash(
 
 # print_nan_summary(data)
 
-print("Number of fossil fuel posts:", (data['fossil_fuel'] == True).sum())
-print(data['y_pred'].head(n=10))
 
 # Custom CSS - Load from external file
 with open('styles/custom.css', 'r') as f:
@@ -119,12 +117,12 @@ register_filter_callbacks(app, data)
 register_navigation_callbacks(app)
 register_content_callbacks(app, data, codebook, green_brown_colors, classification_labels)
 
-@lru_cache(maxsize=128)
+@lru_cache(maxsize=150)
 def fetch_junkipedia_post_html(post_id):
     """
     Proxy for Junkipedia posts. Fetches the post and returns a minimal HTML embedding
-    with the post content, injecting CSS to hide inner scrollbars so the iframe itself
-    shows no scrollbars.
+    with the post content, injecting CSS to hide inner scrollbars while preserving
+    full content visibility.
     """
     resp = requests.get(f"https://www.junkipedia.org/posts/{post_id}")
     if resp.status_code != 200:
@@ -142,7 +140,7 @@ def fetch_junkipedia_post_html(post_id):
         if tag.has_attr('src') and isinstance(tag['src'], str) and tag['src'].startswith('/'):
             tag['src'] = "https://www.junkipedia.org" + tag['src']
 
-    # Inject CSS to hide scrollbars inside the embedded page
+    # Inject CSS to hide scrollbars but preserve content visibility
     style = soup.new_tag('style')
     style.string = """
       html, body {
@@ -158,11 +156,20 @@ def fetch_junkipedia_post_html(post_id):
         width: 100%;
         max-width: 100%;
         overflow: hidden;
+        padding-left: 10px;            /* Add left padding to prevent cutoff */
+        box-sizing: border-box;        /* Ensure padding is included in width */
+      }
+      /* Ensure content doesn't get clipped */
+      .embedded-post-wrapper > * {
+        max-width: 100%;
+        box-sizing: border-box;
       }
     """
     head.append(style)
 
     head_html = str(head)
+    
+    # Extract the posts wrapper with better error handling
     outer_list = soup.find_all('div', {'data-controller':'posts'})
     if not outer_list:
         outer = soup.body or soup
@@ -174,7 +181,7 @@ def fetch_junkipedia_post_html(post_id):
 
     body_html = f'<div class="embedded-post-wrapper">{str(outer)}</div>'
 
-    # --- Minimal page with injected CSS ---
+    # Minimal page with injected CSS
     html = f"""<!DOCTYPE html>
 <html>
   {head_html}

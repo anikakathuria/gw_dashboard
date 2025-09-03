@@ -147,13 +147,14 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
             posts_per_page = 10
             
             if view_toggle == "all_posts":
+                # All Posts View - copy the exact working structure from comparison view
                 posts_per_page = 10
-                # All Posts View
                 start = current_page * posts_per_page
                 end = start + posts_per_page
                 
-                posts = [create_post_component(row) for _, row in filtered_data.iloc[start:end].iterrows()]
-            
+                # Get all posts (no filtering by green_brown)
+                all_posts = [create_post_component(row) for _, row in filtered_data.iloc[start:end].iterrows()]
+                
                 pagination_buttons = html.Div([
                     html.Button(
                         '← Previous',
@@ -176,19 +177,20 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                     "display": "block"
                 })
                 
-                # Split into two columns
-                posts_first_half = posts[::2]
-                posts_second_half = posts[1::2]
+                # Simple two-column layout
+                mid_point = (len(all_posts) + 1) // 2
+                left_posts = all_posts[:mid_point]
+                right_posts = all_posts[mid_point:]
                 
                 content_div = html.Div([
                     html.Div([
                         html.Div([
-                            html.Div(posts_first_half, className="posts-grid")
-                        ], style={"width": "48%", "display": "inline-block"}),
+                            html.Div(left_posts, className="posts-grid")
+                        ], style={"width": "48%", "display": "inline-block", "vertical-align": "top"}),
                         html.Div([
-                            html.Div(posts_second_half, className="posts-grid")
-                        ], style={"width": "48%", "display": "inline-block", "margin-left": "4%"})
-                    ]),
+                            html.Div(right_posts, className="posts-grid")
+                        ], style={"width": "48%", "display": "inline-block", "margin-left": "4%", "vertical-align": "top"})
+                    ], style={"display": "flex", "align-items": "flex-start"}),
                     pagination_buttons
                 ])
 

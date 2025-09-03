@@ -1,4 +1,3 @@
-import pandas as pd
 from dash import html, dcc
 
 # Define color schemes and classification labels
@@ -87,8 +86,8 @@ def create_post_component(row):
     Returns:
         html.Div: The post component.
     """
-    classification_class = f"classification-{row['green_brown']}"
-    border_color = green_brown_colors.get(row['green_brown'], "#ddd")
+    #classification_class = f"classification-{row['green_brown']}"
+    #border_color = green_brown_colors.get(row['green_brown'], "#ddd")
     
     # Set width based on view mode
     post_width = "80%"
@@ -145,21 +144,25 @@ def create_post_component(row):
         #     "text-align": "center",
         # }),
         
-        html.Div([
+        # Only render footer if there are subcategory labels to show
+        *([html.Div([
             *[
                 html.Span(
                     column.replace("_", " ").title(),  # Display column name as badge text
-                    className=f"classification-badge classification-brown" if column in ["primary_product", "petrochemical_product", "infrastructure_production","other_fossil"]
-                    else f"classification-badge classification-green",
-                    title=row['ff_categories_explanation'] if column in ["primary_product", "petrochemical_product", "infrastructure_production"] else row['green_categories_explanation']
+                    className="classification-badge classification-brown" if column in ["primary_product", "petrochemical_product", "infrastructure_production", "fossil_fuel_other"]
+                    else "classification-badge classification-green",
+                    title=row.get('ff_categories_explanation', '') if column in ["primary_product", "petrochemical_product", "infrastructure_production", "fossil_fuel_other"] else row.get('green_categories_explanation', '')
                 )
                 for column in [
                     "primary_product", "petrochemical_product", "infrastructure_production", "fossil_fuel_other",
                     "decreasing_emissions", "viable_solutions", "false_solutions", "recycling_waste_management", "nature_animal_references", "generic_environmental_references", "green_other"
                 ]
-                if row[column] == 1  # Only include badges for columns with a value of 1
+                if row.get(column, 0) == 1  # Use .get() with default 0 to handle missing columns safely
             ]
-        ], className="post-footer-2")
+        ], className="post-footer-2")] if any(row.get(column, 0) == 1 for column in [
+            "primary_product", "petrochemical_product", "infrastructure_production", "fossil_fuel_other",
+            "decreasing_emissions", "viable_solutions", "false_solutions", "recycling_waste_management", "nature_animal_references", "generic_environmental_references", "green_other"
+        ]) else [])
     ], className="social-post", style={
         "padding": "0",  # Remove padding to make container match iframe size
         "width": post_width,  # Set width based on view mode
