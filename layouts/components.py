@@ -98,7 +98,7 @@ def create_post_component(row):
     # If it's not, you'll need to extract it from another field or URL
     post_id = row.get('id', None)
     height = row.get('computed_height', 800)
-    width = row.get('computed_width', 600)
+    width = "360px"
     
     # Create the iframe for the Junkipedia post with bottom 20px cut off
     junkipedia_iframe = html.Div([
@@ -108,7 +108,8 @@ def create_post_component(row):
                 "width": f"{width}",
                 "height": f"{height}", 
                 "display": "block", 
-                "background-color": "transparent"
+                "background-color": "transparent",
+                "overflow": "hidden",
             },
             # Add all necessary permissions to the sandbox
             sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-downloads"
@@ -128,7 +129,6 @@ def create_post_component(row):
             "align-items": "flex-start",  # Changed from center to flex-start
             "padding": "0",
             "margin": "0",
-            "height": "auto"  # Allow container to grow
         }),
         
         # # Keep the original footers
@@ -164,7 +164,7 @@ def create_post_component(row):
         "padding": "0",  # Remove padding to make container match iframe size
         "width": post_width,  # Set width based on view mode
         "margin": "0 auto",
-        "height": "auto",  # Allow container to grow
+        "height": "auto", 
         "display": "flex",
         "flex-direction": "column"
     })

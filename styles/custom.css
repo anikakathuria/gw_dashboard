@@ -69,11 +69,9 @@ body {
   border: none;
   display: block;
 }
-/* Add this new style for iframe container */
 .post-content iframe-container {
   width: 100%;
   position: relative;
-  height: auto; /* Allow container to grow with content */
 }
 .post-text {
   max-height: 100px;

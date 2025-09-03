@@ -122,54 +122,67 @@ register_content_callbacks(app, data, codebook, green_brown_colors, classificati
 @lru_cache(maxsize=128)
 def fetch_junkipedia_post_html(post_id):
     """
-    Proxy for Junkipedia posts. This function fetches the post from Junkipedia and returns a minimal HTML embedding
-      with the post content. This is used to display the post in an iframe.
-
-    Arguments:
-        post_id (str): The "post_id" of the post to fetch from Junkipedia.
-    
-    Returns:
-        Response: A Flask Response object containing the HTML content of the post.
+    Proxy for Junkipedia posts. Fetches the post and returns a minimal HTML embedding
+    with the post content, injecting CSS to hide inner scrollbars so the iframe itself
+    shows no scrollbars.
     """
     resp = requests.get(f"https://www.junkipedia.org/posts/{post_id}")
     if resp.status_code != 200:
         return None, resp.status_code
 
     soup = BeautifulSoup(resp.text, 'html.parser')
-
-    # — 1) Grab all the original <head> tags we need —
     head = soup.head or soup.new_tag('head')
 
-    # insert a <base> so absolute + relative URLs in CSS/JS/images resolve back to the real origin
     base = soup.new_tag('base', href="https://www.junkipedia.org/")
     head.insert(0, base)
 
-    # turn every /… link/src into an absolute URL
     for tag in head.find_all(['link','script']):
-        if tag.has_attr('href') and tag['href'].startswith('/'):
+        if tag.has_attr('href') and isinstance(tag['href'], str) and tag['href'].startswith('/'):
             tag['href'] = "https://www.junkipedia.org" + tag['href']
-        if tag.has_attr('src') and tag['src'].startswith('/'):
+        if tag.has_attr('src') and isinstance(tag['src'], str) and tag['src'].startswith('/'):
             tag['src'] = "https://www.junkipedia.org" + tag['src']
 
-    head_html = str(head)
-
-    # — 2) Extract the full posts‐wrapper, then prune to just your one post —
-    outer = soup.find_all('div', {'data-controller':'posts'})[0]
-    for item in outer.select('div.post-item'):
-        if not item.select_one(f"a[href$='/posts/{post_id}']"):
-            item.decompose()
-    body_html = str(outer)
-
-    # — 3) Rebuild a minimal page —
-    html = f"""
-    <!DOCTYPE html>
-    <html>
-      {head_html}
-      <body style="margin:0;padding:0;display:flex;justify-content:center;">
-        {body_html}
-      </body>
-    </html>
+    # Inject CSS to hide scrollbars inside the embedded page
+    style = soup.new_tag('style')
+    style.string = """
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;              /* hide inner scrollbars */
+        background: transparent;
+      }
+      * { scrollbar-width: none; }     /* Firefox */
+      *::-webkit-scrollbar { display: none; }  /* Chromium/WebKit */
+      .embedded-post-wrapper {
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+      }
     """
+    head.append(style)
+
+    head_html = str(head)
+    outer_list = soup.find_all('div', {'data-controller':'posts'})
+    if not outer_list:
+        outer = soup.body or soup
+    else:
+        outer = outer_list[0]
+        for item in outer.select('div.post-item'):
+            if not item.select_one(f"a[href$='/posts/{post_id}']"):
+                item.decompose()
+
+    body_html = f'<div class="embedded-post-wrapper">{str(outer)}</div>'
+
+    # --- Minimal page with injected CSS ---
+    html = f"""<!DOCTYPE html>
+<html>
+  {head_html}
+  <body style="margin:0;padding:0;display:flex;justify-content:center;overflow:hidden;">
+    {body_html}
+  </body>
+</html>
+"""
     return html, 200
 
 @app.server.route('/junkipedia_proxy/<post_id>')
