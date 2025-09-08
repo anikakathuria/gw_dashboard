@@ -15,14 +15,13 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
             Output("content", "children"),
             Output("post_count_badge", "children"),
             Output("analytics_post_count_badge", "children"),
-        ], 
+        ],
         [
             Input("tabs", "value"),
             Input('current_page', 'data'),
 
             # Social-media filters
-            Input('date_range', 'start_date'),
-            Input('date_range', 'end_date'),
+            Input("date_range", "value"),                 # <-- RangeSlider [y0, y1]
             Input('company_filter', 'value'),
             Input('entity_filter', 'value'),
             Input('platform_filter', 'value'),
@@ -36,8 +35,7 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
             Input('social_green_subcategories', 'value'),
 
             # Analytics filters
-            Input('analytics_date_range', 'start_date'),
-            Input('analytics_date_range', 'end_date'),
+            Input("analytics_date_range", "value"),       # <-- RangeSlider [y0, y1] (FIXED)
             Input('analytics_company_filter', 'value'),
             Input('analytics_entity_filter', 'value'),
             Input('analytics_platform_filter', 'value'),
@@ -51,19 +49,25 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
         current_page,
 
         # social inputs
-        sm_start, sm_end, sm_companies, sm_entities, sm_platforms, sm_classifs,
+        sm_years, sm_companies, sm_entities, sm_platforms, sm_classifs,
         view_toggle, left_view, right_view, sm_uniqueness, keyword_search,
         sm_fossil_subcategories, sm_green_subcategories,
 
         # analytics inputs
-        an_start, an_end, an_companies, an_entities, an_platforms, an_uniqueness,
+        an_years, an_companies, an_entities, an_platforms, an_uniqueness,
         an_fossil_subcategories, an_green_subcategories
     ):
         filtered_data = data.copy()
         print(len(filtered_data))
         
         if tab_name == "social_media":
-            start_date, end_date = sm_start, sm_end
+            # Convert year slider -> full-date strings
+            if sm_years and len(sm_years) == 2:
+                y0, y1 = int(sm_years[0]), int(sm_years[1])
+                start_date, end_date = f"{y0}-01-01", f"{y1}-12-31"
+            else:
+                start_date = end_date = None  # (unlikely given slider defaults)
+
             companies, entities, platforms, classifications = (
                 sm_companies, sm_entities, sm_platforms, sm_classifs
             )
@@ -81,10 +85,17 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                 "recycling_waste_management": "recycling_waste_management" in sm_green_subcategories,
                 "nature_animal_references": "nature_animal_references" in sm_green_subcategories,
                 "generic_environmental_references": "generic_environmental_references" in sm_green_subcategories,
-                "other_green": "green_other" in sm_green_subcategories
+                "other_green": "other_green" in sm_green_subcategories
             }
+
         else:  # analytics
-            start_date, end_date = an_start, an_end
+            # Convert year slider -> full-date strings
+            if an_years and len(an_years) == 2:
+                y0, y1 = int(an_years[0]), int(an_years[1])
+                start_date, end_date = f"{y0}-01-01", f"{y1}-12-31"
+            else:
+                start_date = end_date = None
+
             companies, entities, platforms = an_companies, an_entities, an_platforms
             uniqueness = an_uniqueness
             keyword_search = None
@@ -101,7 +112,7 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                 "recycling_waste_management": "recycling_waste_management" in an_green_subcategories,
                 "nature_animal_references": "nature_animal_references" in an_green_subcategories,
                 "generic_environmental_references": "generic_environmental_references" in an_green_subcategories,
-                "other_green": "green_other" in an_green_subcategories
+                "other_green": "other_green" in an_green_subcategories
             }
         
         # Apply uniqueness filter
@@ -119,7 +130,7 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
         # Apply date filter
         if start_date and end_date:
             filtered_data = filtered_data[
-                (filtered_data['attributes.published_at'] >= start_date) & 
+                (filtered_data['attributes.published_at'] >= start_date) &
                 (filtered_data['attributes.published_at'] <= end_date)
             ]
         
@@ -349,11 +360,6 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
             return content_div, "", analytics_badge
             
         elif tab_name == "about":
-            # Calculate dynamic values for the About section
-            total_posts = len(data)
-            platforms = ", ".join(sorted(data['attributes.search_data_fields.platform_name'].unique()))
-            
-            # Hidden pagination to keep DOM
             hidden_pagination = html.Div([
                 html.Button('← Previous', id='prev_page', n_clicks=0, className="pagination-button"),
                 html.Button('Next →', id='next_page', n_clicks=0, className="pagination-button")

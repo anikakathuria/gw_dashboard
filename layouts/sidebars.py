@@ -13,11 +13,24 @@ def create_sidebars(data):
         )
         for company in companies
     }
-    
-    # Social Media Sidebar
+
+    # ----- Year bounds for sliders -----
+    min_year = int(data['attributes.published_at'].min().year)
+    max_year = int(data['attributes.published_at'].max().year)
+
+    # Tidy marks (about ~6 ticks incl. ends)
+    def year_marks(a, b):
+        rng = b - a
+        step = max(1, rng // 6) if rng > 0 else 1
+        marks = {y: str(y) for y in range(a, b + 1, step)}
+        marks[a] = str(a)
+        marks[b] = str(b)
+        return marks
+
+    # ---------------- Social Media Sidebar ----------------
     social_sidebar = html.Div([
         html.H3("Feed Filters", style={"margin-bottom": "14px", "color": "#1a237e", "font-weight": "600"}),
-        
+
         # Reset button
         html.Button(
             "Reset All Filters",
@@ -34,7 +47,7 @@ def create_sidebars(data):
             }
         ),
 
-        # >>> Badge mount point for post count (updated by content callback) <<<
+        # Post count badge mount
         html.Div(id="post_count_badge", className="post-count-badge", style={"marginBottom": "12px"}),
 
         html.Label("Keyword Search", style={"font-weight": "500", "margin-bottom": "8px"}),
@@ -44,15 +57,21 @@ def create_sidebars(data):
             placeholder="Search in posts...",
             style={"width": "100%", "padding": "8px", "margin-bottom": "20px"}
         ),
-        html.Label("Date Range", style={"font-weight": "500", "margin-bottom": "8px"}),
-        dcc.DatePickerRange(
-            id='date_range',
-            start_date=data['attributes.published_at'].min().strftime('%Y-%m-%d'),
-            end_date=data['attributes.published_at'].max().strftime('%Y-%m-%d'),
-            display_format='YYYY-MM-DD',
-            style={"margin-bottom": "20px", "width": "100%"}
+
+        # Year slider (replaces DatePickerRange)
+        html.Label("Year Range", style={"font-weight": "500", "margin-bottom": "8px"}),
+        dcc.RangeSlider(
+            id="date_range",                       # keep existing id used by callbacks
+            min=min_year,
+            max=max_year,
+            value=[min_year, max_year],
+            step=1,
+            allowCross=False,
+            marks=year_marks(min_year, max_year),
+            tooltip={"placement": "bottom", "always_visible": False},
         ),
-        html.Label("View", style={"font-weight": "500", "margin-bottom": "8px"}),
+
+        html.Label("View", style={"font-weight": "500", "margin-bottom": "8px", "margin-top": "20px"}),
         dcc.RadioItems(
             id="view_toggle",
             options=[
@@ -136,7 +155,6 @@ def create_sidebars(data):
                     style={"margin-bottom": "16px"}
                 )
             ]),
-            
             html.Div([
                 html.Label("Green Categories", style={"font-weight": "500", "margin-bottom": "8px", "color": "#a7caa0"}),
                 dcc.Checklist(
@@ -173,7 +191,6 @@ def create_sidebars(data):
             value="all",
             style={"margin-bottom": "20px"}
         )
-        
     ], id="social_sidebar", className="sidebar")
 
     # Analytics Sidebar
@@ -196,17 +213,23 @@ def create_sidebars(data):
             }
         ),
 
+        # Post count badge mount for analytics
         html.Div(id="analytics_post_count_badge", className="post-count-badge", style={"marginBottom": "12px"}),
 
-        html.Label("Date Range", style={"font-weight": "500", "margin-bottom": "8px"}),
-        dcc.DatePickerRange(
-            id='analytics_date_range',
-            start_date=data['attributes.published_at'].min().strftime('%Y-%m-%d'),
-            end_date=data['attributes.published_at'].max().strftime('%Y-%m-%d'),
-            display_format='YYYY-MM-DD',
-            style={"margin-bottom": "20px", "width": "100%"}
+        # Year slider (replaces DatePickerRange)
+        html.Label("Year Range", style={"font-weight": "500", "margin-bottom": "8px"}),
+        dcc.RangeSlider(
+            id="analytics_date_range",            # keep existing id used by callbacks
+            min=min_year,
+            max=max_year,
+            value=[min_year, max_year],
+            step=1,
+            allowCross=False,
+            marks=year_marks(min_year, max_year),
+            tooltip={"placement": "bottom", "always_visible": False},
         ),
-        html.Label("Companies", style={"font-weight": "500", "margin-bottom": "8px"}),
+
+        html.Label("Companies", style={"font-weight": "500", "margin-top": "20px", "margin-bottom": "8px"}),
         dcc.Dropdown(
             id="analytics_company_filter",
             options=[{"label": c, "value": c} for c in companies],
@@ -239,7 +262,6 @@ def create_sidebars(data):
                     style={"margin-bottom": "16px"}
                 )
             ]),
-            
             html.Div([
                 html.Label("Green Categories", style={"font-weight": "500", "margin-bottom": "8px", "color": "#a7caa0"}),
                 dcc.Checklist(
@@ -274,12 +296,11 @@ def create_sidebars(data):
             value="all",
             style={"margin-bottom": "20px"}
         )
-        
     ], id="analytics_sidebar", className="sidebar", style={"display": "none"})
 
     # About Sidebar
     about_sidebar = html.Div([
         html.P("Select a tab to view and filter content.", style={"font-weight": "500", "margin-bottom": "8px"}),
     ], id="about_sidebar", className="sidebar", style={"display": "none"})
-    
+
     return social_sidebar, analytics_sidebar, about_sidebar

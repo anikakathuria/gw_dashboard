@@ -102,7 +102,9 @@ def register_filter_callbacks(app, data):
         return {"display": "block"}
     
     @app.callback(
-        [Output("social_sidebar", "style"), Output("analytics_sidebar", "style"), Output("about_sidebar", "style")],
+        [Output("social_sidebar", "style"),
+         Output("analytics_sidebar", "style"),
+         Output("about_sidebar", "style")],
         Input("tabs", "value")
     )
     def toggle_sidebars(tab):
@@ -128,8 +130,7 @@ def register_filter_callbacks(app, data):
          Output("view_toggle", "value"),
          Output("left_view", "value"),
          Output("right_view", "value"),
-         Output("date_range", "start_date"),
-         Output("date_range", "end_date"),
+         Output("date_range", "value"),                 # <- RangeSlider years [y0, y1]
          Output("company_filter", "value"),
          Output("platform_filter", "value"),
          Output("classification_dropdown", "value"),
@@ -160,30 +161,29 @@ def register_filter_callbacks(app, data):
         if n_clicks is None:
             return dash.no_update
         
-        
-        companies = sorted(data['company'].unique())
-        print(companies)
-        platforms = sorted(data['attributes.search_data_fields.platform_name'].unique())
+        companies = sorted(data['company'].dropna().unique())
+        platforms = sorted(data['attributes.search_data_fields.platform_name'].dropna().unique())
+
+        min_year = int(data['attributes.published_at'].min().year)
+        max_year = int(data['attributes.published_at'].max().year)
         
         return (
-            "",  # keyword_search
-            "compare_posts",  # view_toggle
-            "green",  # left_view
-            "brown",  # right_view
-            data['attributes.published_at'].min().strftime('%Y-%m-%d'),  # date_range start
-            data['attributes.published_at'].max().strftime('%Y-%m-%d'),  # date_range end
-            companies,  # company_filter
-            platforms,  # platform_filter
+            "",                       # keyword_search
+            "compare_posts",          # view_toggle
+            "green",                  # left_view
+            "brown",                  # right_view
+            [min_year, max_year],     # date_range (RangeSlider years)
+            companies,                # company_filter
+            platforms,                # platform_filter
             ["green", "brown", "green_brown", "misc"],  # classification_dropdown
-            "all",  # uniqueness_toggle
-            [],  # social_fossil_subcategories
-            []   # social_green_subcategories
+            "all",                    # uniqueness_toggle
+            [],                       # social_fossil_subcategories
+            []                        # social_green_subcategories
         )
     
     # Reset analytics filters
     @app.callback(
-        [Output("analytics_date_range", "start_date"),
-         Output("analytics_date_range", "end_date"),
+        [Output("analytics_date_range", "value"),       # <- RangeSlider years [y0, y1]
          Output("analytics_company_filter", "value"),
          Output("analytics_platform_filter", "value"),
          Output("analytics_uniqueness_toggle", "value"),
@@ -210,15 +210,17 @@ def register_filter_callbacks(app, data):
         if n_clicks is None:
             return dash.no_update
         
-        companies = sorted(data['company'].unique())
-        platforms = sorted(data['attributes.search_data_fields.platform_name'].unique())
+        companies = sorted(data['company'].dropna().unique())
+        platforms = sorted(data['attributes.search_data_fields.platform_name'].dropna().unique())
+
+        min_year = int(data['attributes.published_at'].min().year)
+        max_year = int(data['attributes.published_at'].max().year)
         
         return (
-            data['attributes.published_at'].min().strftime('%Y-%m-%d'),  # date_range start
-            data['attributes.published_at'].max().strftime('%Y-%m-%d'),  # date_range end
-            companies,  # company_filter
-            platforms,  # platform_filter
-            "all",  # uniqueness_toggle
-            [],  # analytics_fossil_subcategories
-            []   # analytics_green_subcategories
+            [min_year, max_year],     # analytics_date_range (RangeSlider years)
+            companies,                # analytics_company_filter
+            platforms,                # analytics_platform_filter
+            "all",                    # analytics_uniqueness_toggle
+            [],                       # analytics_fossil_subcategories
+            []                        # analytics_green_subcategories
         )
