@@ -14,8 +14,7 @@ def register_navigation_callbacks(app):
         [Input('prev_page', 'n_clicks'),
          Input('next_page', 'n_clicks'),
          # Add all filter inputs that should reset the page
-         Input('date_range', 'start_date'),
-         Input('date_range', 'end_date'),
+         Input('date_range', 'value'),
          Input('company_filter', 'value'),
          Input('entity_filter', 'value'),
          Input('platform_filter', 'value'),
@@ -28,8 +27,7 @@ def register_navigation_callbacks(app):
          Input('social_fossil_subcategories', 'value'),
          Input('social_green_subcategories', 'value'),
          # Analytics filters
-         Input('analytics_date_range', 'start_date'),
-         Input('analytics_date_range', 'end_date'),
+         Input('analytics_date_range', 'value'),
          Input('analytics_company_filter', 'value'),
          Input('analytics_entity_filter', 'value'),
          Input('analytics_platform_filter', 'value'),
@@ -42,11 +40,11 @@ def register_navigation_callbacks(app):
     )
     def update_page(prev_clicks, next_clicks, 
                    # Filter states
-                   sm_start, sm_end, sm_companies, sm_entities, sm_platforms, sm_classifs,
+                   sm_years, sm_companies, sm_entities, sm_platforms, sm_classifs,
                    view_toggle, left_view, right_view, sm_uniqueness, keyword_search,
                    sm_fossil_subcategories, sm_green_subcategories,
                    # Analytics filters
-                   an_start, an_end, an_companies, an_entities, an_platforms, an_uniqueness,
+                   an_years, an_companies, an_entities, an_platforms, an_uniqueness,
                    an_fossil_subcategories, an_green_subcategories,
                    # Tab
                    active_tab,
@@ -86,6 +84,8 @@ def register_navigation_callbacks(app):
             int: The updated page number.
         """
         ctx = dash.callback_context
+        page = current_page or 0
+
         if not ctx.triggered:
             return 0  # Default to first page
         
@@ -99,12 +99,12 @@ def register_navigation_callbacks(app):
         # Only handle pagination if we're on the social media tab
         if active_tab == "social_media":
             # Handle pagination buttons
-            if triggered_id == 'prev_page' and current_page > 0:
-                return current_page - 1
-            elif triggered_id == 'next_page':
-                return current_page + 1
+            if triggered_id == 'prev_page':
+                return max(0, page - 1)
+            if triggered_id == 'next_page':
+                return page + 1
         
-        return current_page
+        return page
     
     # Add a clientside callback to scroll to top when page changes
     clientside_callback(

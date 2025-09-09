@@ -21,8 +21,7 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
             Input('current_page', 'data'),
 
             # Social-media filters
-            Input('date_range', 'start_date'),
-            Input('date_range', 'end_date'),
+            Input('date_range', 'value'),
             Input('company_filter', 'value'),
             Input('entity_filter', 'value'),
             Input('platform_filter', 'value'),
@@ -36,8 +35,7 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
             Input('social_green_subcategories', 'value'),
 
             # Analytics filters
-            Input('analytics_date_range', 'start_date'),
-            Input('analytics_date_range', 'end_date'),
+            Input('analytics_date_range', 'value'),
             Input('analytics_company_filter', 'value'),
             Input('analytics_entity_filter', 'value'),
             Input('analytics_platform_filter', 'value'),
@@ -51,19 +49,23 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
         current_page,
 
         # social inputs
-        sm_start, sm_end, sm_companies, sm_entities, sm_platforms, sm_classifs,
+        sm_years, sm_companies, sm_entities, sm_platforms, sm_classifs,
         view_toggle, left_view, right_view, sm_uniqueness, keyword_search,
         sm_fossil_subcategories, sm_green_subcategories,
 
         # analytics inputs
-        an_start, an_end, an_companies, an_entities, an_platforms, an_uniqueness,
+        an_years, an_companies, an_entities, an_platforms, an_uniqueness,
         an_fossil_subcategories, an_green_subcategories
     ):
         filtered_data = data.copy()
         print(len(filtered_data))
         
         if tab_name == "social_media":
-            start_date, end_date = sm_start, sm_end
+            if sm_years and len(sm_years) == 2:
+                y0, y1 = int(sm_years[0]), int(sm_years[1])
+                start_date, end_date = f"{y0}-01-01", f"{y1}-12-31",
+            else:
+                start_date = end_date = None
             companies, entities, platforms, classifications = (
                 sm_companies, sm_entities, sm_platforms, sm_classifs
             )
@@ -84,7 +86,11 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                 "other_green": "green_other" in sm_green_subcategories
             }
         else:  # analytics
-            start_date, end_date = an_start, an_end
+            if sm_years and len(sm_years) == 2:
+                y0, y1 = int(sm_years[0]), int(sm_years[1])
+                start_date, end_date = f"{y0}-01-01", f"{y1}-12-31",
+            else:
+                start_date = end_date = None
             companies, entities, platforms = an_companies, an_entities, an_platforms
             uniqueness = an_uniqueness
             keyword_search = None
@@ -232,23 +238,35 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                         className="pagination-button"
                     )
                 ], style={
-                    "text-align": "center",
-                    "margin-top": "32px",
-                    "padding-bottom": "32px",
+                    "textAlign": "center",
+                    "marginTop": "32px",
+                    "paddingBottom": "32px",
                     "display": "block"
                 })
                 
+                # === FLEX WRAPPER + CATEGORY CONTAINERS ===
                 content_div = html.Div([
                     html.Div([
+                        # Left category column
                         html.Div([
-                            html.H3(f"{classification_labels[left_view]} Posts", className="comparison-title"),
+                            html.H3(f"{classification_labels[left_view]} Posts",
+                                    className="comparison-title",
+                                    style={"margin": "0 0 12px 0", "textAlign": "center"}),
                             html.Div(left_posts, className="posts-grid")
-                        ], style={"width": "48%", "display": "inline-block"}),
+                        ], className="category", style={"width": "48%"}),
+
+                        # Right category column
                         html.Div([
-                            html.H3(f"{classification_labels[right_view]} Posts", className="comparison-title"),
+                            html.H3(f"{classification_labels[right_view]} Posts",
+                                    className="comparison-title",
+                                    style={"margin": "0 0 12px 0", "textAlign": "center"}),
                             html.Div(right_posts, className="posts-grid")
-                        ], style={"width": "48%", "display": "inline-block", "margin-left": "4%"})
-                    ]),
+                        ], className="category", style={"width": "48%"})
+                    ], style={
+                        "display": "flex",
+                        "gap": "4%",
+                        "alignItems": "flex-start"   # <- keep both titles pinned to the top
+                    }),
                     pagination_buttons
                 ])
 
@@ -282,18 +300,7 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                         "This section shows the distribution of social media posts across categories and sub-categories.",
                         className="analytics-description"
                     ),
-                    html.P([
-                            html.Strong("Total Proportions (left) "),
-                            "Stacked bar chart showing the fraction of posts labelled by CLAIMS as Only Green, Only Fossil, Green+Fossil, or Miscellaneous."
-                    ], className="analytics-description"),
-                    html.P([
-                            html.Strong("All Green Posts (middle): "),
-                            "Bar chart showing the number of posts by Green subcategory, as labelled by CLAIMS: Emissions Reduction, False Solutions, Other Green, Recycling/Waste Management, and Low-Carbon Technologies. Posts assigned both Fossil Fuel and Green labels by CLAIMS indicate efforts to greenwash messaging about fossil fuels, and are therefore included in this bar chart."
-                    ], className="analytics-description"),
-                    html.P([
-                            html.Strong("All Fossil Posts (right): "),
-                            "Bar chart showing the number of posts by Fossil Fuel subcategory, as labelled by CLAIMS: Primary Product, Petrochemical Product, Other Fossil Fuel, and Infrastructure & Production."
-                    ], className="analytics-description"),
+                    
                     
                     
                     html.Div(
@@ -308,33 +315,33 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                 # Greenwashing Score Section
                 html.Div([
                     html.H2("Greenwashing score: % Green posts / % Green CAPEX", className="analytics-header"),
-                    html.P(
-                        "CDO has pioneered the first quantitative social media Greenwashing Score, which compares the prevalence of a company’s green messaging to its actual climate mitigation investments. The Greenwashing Score is defined as % Green posts divided by % Green CAPEX (capital expenditures), with values greater than 1 indicating greenwashing at the company-level, which we term macro-scale greenwashing. The line graphs show the Greenwashing Score over time for each company.",
-                        className="analytics-description"
-                    ),
                     html.Div(
                         dcc.Graph(
                             figure=raw_greenwashing_fig,
                             config={'displayModeBar': False},
                             style={"height": "600px"}
                         )
-                    )
+                    ),
+                    html.P(
+                        "CDO has pioneered the first quantitative social media Greenwashing Score, which compares the prevalence of a company’s green messaging to its actual climate mitigation investments. The Greenwashing Score is defined as % Green posts divided by % Green CAPEX (capital expenditures), with values greater than 1 indicating greenwashing at the company-level, which we term macro-scale greenwashing. The line graphs show the Greenwashing Score over time for each company.",
+                        className="analytics-description"
+                    ),
                 ], className="analytics-section"),
 
                 # Green Share Section
                 html.Div([
                     html.H2("Green Share of Climate Relevant posts", className="analytics-header"),
-                    html.P(
-                        "Line graph showing the fraction of climate-relevant social media posts that contain Green messaging. We here define Green messaging as any post labelled by CLAIMS as Only Green or Green+Fossil. We define climate-relevant posts as all posts except Miscellaneous ones.",
-                        className="analytics-description"
-                    ),
                     html.Div(
                         dcc.Graph(
                             figure=green_share_fig,
                             config={'displayModeBar': False},
                             style={"height": "600px"}
                         )
-                    )
+                    ),
+                    html.P(
+                        "Line graph showing the fraction of climate-relevant social media posts that contain Green messaging. We here define Green messaging as any post labelled by CLAIMS as Only Green or Green+Fossil. We define climate-relevant posts as all posts except Miscellaneous ones.",
+                        className="analytics-description"
+                    ),
                 ], className="analytics-section"),
                 
                 # Add hidden pagination buttons
@@ -351,10 +358,6 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
             return content_div, "", analytics_badge
             
         elif tab_name == "about":
-            # Calculate dynamic values for the About section
-            total_posts = len(data)
-            platforms = ", ".join(sorted(data['attributes.search_data_fields.platform_name'].unique()))
-            
             # Hidden pagination to keep DOM
             hidden_pagination = html.Div([
                 html.Button('← Previous', id='prev_page', n_clicks=0, className="pagination-button"),

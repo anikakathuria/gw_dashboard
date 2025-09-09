@@ -1,4 +1,4 @@
-from dash import Input, Output, State, ALL, callback_context
+from dash import Input, Output, State
 import dash
 
 def register_filter_callbacks(app, data):
@@ -28,16 +28,17 @@ def register_filter_callbacks(app, data):
         """
         if not selected_companies:
             return [], []
-        
         channels = []
         for company in selected_companies:
-            company_channels = data[data['company'] == company]['attributes.search_data_fields.channel_data.channel_name'].unique()
+            company_channels = data.loc[
+                data['company'] == company, 'attributes.search_data_fields.channel_data.channel_name'
+            ].dropna().unique()
             channels.extend(company_channels)
-        
-        channels = sorted(channels)
-        options = [{"label": channel, "value": channel} for channel in channels]
+        channels = sorted(set(channels))
+        options = [{"label": ch, "value": ch} for ch in channels]
         return options, channels
 
+    # --- Dependent options: Channels list follows Companies selection (ANALYTICS) ---
     @app.callback(
         [Output("analytics_entity_filter", "options"),
          Output("analytics_entity_filter", "value")],
@@ -55,16 +56,17 @@ def register_filter_callbacks(app, data):
         """
         if not selected_companies:
             return [], []
-        
         channels = []
         for company in selected_companies:
-            company_channels = data[data['company'] == company]['attributes.search_data_fields.channel_data.channel_name'].unique()
+            company_channels = data.loc[
+                data['company'] == company, 'attributes.search_data_fields.channel_data.channel_name'
+            ].dropna().unique()
             channels.extend(company_channels)
-        
-        channels = sorted(channels)
-        options = [{"label": channel, "value": channel} for channel in channels]
+        channels = sorted(set(channels))
+        options = [{"label": ch, "value": ch} for ch in channels]
         return options, channels
-    
+
+    # --- View-specific UI visibility (Social) ---
     @app.callback(
         Output("comparison_subtoggle", "style"),
         [Input("view_toggle", "value")]
@@ -79,10 +81,7 @@ def register_filter_callbacks(app, data):
         Returns:
             style (dict): CSS style for the comparison controls.
         """
-
-        if view_toggle == "compare_posts":
-            return {"display": "block"}
-        return {"display": "none"}
+        return {"display": "block"} if view_toggle == "compare_posts" else {"display": "none"}
 
     @app.callback(
         Output("classification_filter", "style"),
@@ -97,12 +96,14 @@ def register_filter_callbacks(app, data):
         Returns:
             style (dict): CSS style for the classification filter.
         """
-        if view_toggle == "compare_posts":
-            return {"display": "none"}
-        return {"display": "block"}
-    
+        # Hide classification multi-select in comparison mode
+        return {"display": "none"} if view_toggle == "compare_posts" else {"display": "block"}
+
+    # --- Sidebar visibility per tab ---
     @app.callback(
-        [Output("social_sidebar", "style"), Output("analytics_sidebar", "style"), Output("about_sidebar", "style")],
+        [Output("social_sidebar", "style"),
+         Output("analytics_sidebar", "style"),
+         Output("about_sidebar", "style")],
         Input("tabs", "value")
     )
     def toggle_sidebars(tab):
@@ -119,23 +120,57 @@ def register_filter_callbacks(app, data):
             return {"display": "block"}, {"display": "none"}, {"display": "none"}
         elif tab == "analytics":
             return {"display": "none"}, {"display": "block"}, {"display": "none"}
-        else:  # about
-            return {"display": "none"}, {"display": "none"}, {"display": "block"}
-    
-    # Reset social filters
+        return {"display": "none"}, {"display": "none"}, {"display": "block"}
+
+    # === NEW: Show/Hide containers for COMPANIES & CHANNELS (both sidebars) ===
+
+    # Social: Companies
+    @app.callback(
+        Output("company_filter_container", "style"),
+        Input("toggle_company_filter", "value")
+    )
+    def toggle_social_companies(toggle_vals):
+        return {"display": "block"} if toggle_vals and "show" in toggle_vals else {"display": "none"}
+
+    # Social: Channels
+    @app.callback(
+        Output("entity_filter_container", "style"),
+        Input("toggle_entity_filter", "value")
+    )
+    def toggle_social_channels(toggle_vals):
+        return {"display": "block"} if toggle_vals and "show" in toggle_vals else {"display": "none"}
+
+    # Analytics: Companies
+    @app.callback(
+        Output("analytics_company_filter_container", "style"),
+        Input("toggle_analytics_company_filter", "value")
+    )
+    def toggle_analytics_companies(toggle_vals):
+        return {"display": "block"} if toggle_vals and "show" in toggle_vals else {"display": "none"}
+
+    # Analytics: Channels
+    @app.callback(
+        Output("analytics_entity_filter_container", "style"),
+        Input("toggle_analytics_entity_filter", "value")
+    )
+    def toggle_analytics_channels(toggle_vals):
+        return {"display": "block"} if toggle_vals and "show" in toggle_vals else {"display": "none"}
+
+    # --- Reset (SOCIAL) ---
     @app.callback(
         [Output("keyword_search", "value"),
          Output("view_toggle", "value"),
          Output("left_view", "value"),
          Output("right_view", "value"),
-         Output("date_range", "start_date"),
-         Output("date_range", "end_date"),
+         Output("date_range", "value"),                 # RangeSlider -> value=[min_year, max_year]
          Output("company_filter", "value"),
          Output("platform_filter", "value"),
          Output("classification_dropdown", "value"),
          Output("uniqueness_toggle", "value"),
          Output("social_fossil_subcategories", "value"),
-         Output("social_green_subcategories", "value")],
+         Output("social_green_subcategories", "value"),
+         Output("toggle_company_filter", "value"),      # keep Companies shown after reset
+         Output("toggle_entity_filter", "value")],      # keep Channels hidden after reset
         [Input("reset_social_filters", "n_clicks")],
         prevent_initial_call=True
     )
@@ -157,38 +192,40 @@ def register_filter_callbacks(app, data):
                 social_fossil_subcategories (list): Default value for the social fossil subcategories.
                 social_green_subcategories (list): Default value for the social green subcategories.
         """
-        if n_clicks is None:
+        if not n_clicks:
             return dash.no_update
-        
-        
-        companies = sorted(data['company'].unique())
-        print(companies)
-        platforms = sorted(data['attributes.search_data_fields.platform_name'].unique())
-        
+
+        companies = sorted(data['company'].dropna().unique())
+        platforms = sorted(data['attributes.search_data_fields.platform_name'].dropna().unique())
+        min_year = int(data['attributes.published_at'].min().year)
+        max_year = int(data['attributes.published_at'].max().year)
+
         return (
-            "",  # keyword_search
-            "compare_posts",  # view_toggle
-            "green",  # left_view
-            "brown",  # right_view
-            data['attributes.published_at'].min().strftime('%Y-%m-%d'),  # date_range start
-            data['attributes.published_at'].max().strftime('%Y-%m-%d'),  # date_range end
-            companies,  # company_filter
-            platforms,  # platform_filter
+            "",                       # keyword_search
+            "compare_posts",          # view_toggle
+            "green",                  # left_view
+            "brown",                  # right_view
+            [min_year, max_year],     # date_range (RangeSlider)
+            companies,                # company_filter
+            platforms,                # platform_filter
             ["green", "brown", "green_brown", "misc"],  # classification_dropdown
-            "all",  # uniqueness_toggle
-            [],  # social_fossil_subcategories
-            []   # social_green_subcategories
+            "all",                    # uniqueness_toggle
+            [],                       # social_fossil_subcategories
+            [],                       # social_green_subcategories
+            ["show"],                 # toggle_company_filter -> show container
+            []                        # toggle_entity_filter  -> keep hidden by default
         )
-    
-    # Reset analytics filters
+
+    # --- Reset (ANALYTICS) ---
     @app.callback(
-        [Output("analytics_date_range", "start_date"),
-         Output("analytics_date_range", "end_date"),
+        [Output("analytics_date_range", "value"),       # RangeSlider -> [min_year, max_year]
          Output("analytics_company_filter", "value"),
          Output("analytics_platform_filter", "value"),
          Output("analytics_uniqueness_toggle", "value"),
          Output("analytics_fossil_subcategories", "value"),
-         Output("analytics_green_subcategories", "value")],
+         Output("analytics_green_subcategories", "value"),
+         Output("toggle_analytics_company_filter", "value"),   # show Companies after reset
+         Output("toggle_analytics_entity_filter", "value")],   # hide Channels after reset
         [Input("reset_analytics_filters", "n_clicks")],
         prevent_initial_call=True
     )
@@ -206,19 +243,21 @@ def register_filter_callbacks(app, data):
             analytics_fossil_subcategories (list): Default value for the analytics fossil subcategories.
             analytics_green_subcategories (list): Default value for the analytics green subcategories.
         """
-        
-        if n_clicks is None:
+        if not n_clicks:
             return dash.no_update
-        
-        companies = sorted(data['company'].unique())
-        platforms = sorted(data['attributes.search_data_fields.platform_name'].unique())
-        
+
+        companies = sorted(data['company'].dropna().unique())
+        platforms = sorted(data['attributes.search_data_fields.platform_name'].dropna().unique())
+        min_year = int(data['attributes.published_at'].min().year)
+        max_year = int(data['attributes.published_at'].max().year)
+
         return (
-            data['attributes.published_at'].min().strftime('%Y-%m-%d'),  # date_range start
-            data['attributes.published_at'].max().strftime('%Y-%m-%d'),  # date_range end
-            companies,  # company_filter
-            platforms,  # platform_filter
-            "all",  # uniqueness_toggle
-            [],  # analytics_fossil_subcategories
-            []   # analytics_green_subcategories
+            [min_year, max_year],  # analytics_date_range
+            companies,             # analytics_company_filter
+            platforms,             # analytics_platform_filter
+            "all",                 # analytics_uniqueness_toggle
+            [],                    # analytics_fossil_subcategories
+            [],                    # analytics_green_subcategories
+            ["show"],              # toggle_analytics_company_filter -> show
+            []                     # toggle_analytics_entity_filter  -> hide
         )

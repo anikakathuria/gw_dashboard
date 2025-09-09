@@ -13,6 +13,18 @@ def create_sidebars(data):
         )
         for company in companies
     }
+
+    min_year = int(data['attributes.published_at'].min().year)
+    max_year = int(data['attributes.published_at'].max().year)
+
+    def year_marks(a: int, b: int) -> dict:
+        """Return a reasonable set of year marks between a and b (inclusive)."""
+        rng = max(0, b - a)
+        step = max(1, rng // 6) if rng > 0 else 1
+        marks = {y: str(y) for y in range(a, b + 1, step)}
+        marks[a] = str(a)
+        marks[b] = str(b)
+        return marks
     
     # Social Media Sidebar
     social_sidebar = html.Div([
@@ -34,7 +46,7 @@ def create_sidebars(data):
             }
         ),
 
-        # >>> Badge mount point for post count (updated by content callback) <<<
+        # Post count badge mount point (updated by content callback)
         html.Div(id="post_count_badge", className="post-count-badge", style={"marginBottom": "12px"}),
 
         html.Label("Keyword Search", style={"font-weight": "500", "margin-bottom": "8px"}),
@@ -44,15 +56,21 @@ def create_sidebars(data):
             placeholder="Search in posts...",
             style={"width": "100%", "padding": "8px", "margin-bottom": "20px"}
         ),
-        html.Label("Date Range", style={"font-weight": "500", "margin-bottom": "8px"}),
-        dcc.DatePickerRange(
-            id='date_range',
-            start_date=data['attributes.published_at'].min().strftime('%Y-%m-%d'),
-            end_date=data['attributes.published_at'].max().strftime('%Y-%m-%d'),
-            display_format='YYYY-MM-DD',
-            style={"margin-bottom": "20px", "width": "100%"}
+        # Year slider (replaces DatePickerRange)
+        html.Label("Year Range", style={"font-weight": "500", "margin-bottom": "8px"}),
+        dcc.RangeSlider(
+            id="date_range",                       # keep existing id used by callbacks
+            min=min_year,
+            max=max_year,
+            value=[min_year, max_year],
+            step=1,
+            allowCross=False,
+            marks=year_marks(min_year, max_year),
+            tooltip={"placement": "bottom", "always_visible": False},
+            className="angled-slider"
         ),
-        html.Label("View", style={"font-weight": "500", "margin-bottom": "8px"}),
+
+        html.Label("View", style={"font-weight": "500", "margin-bottom": "8px", "margin-top": "20px"}),
         dcc.RadioItems(
             id="view_toggle",
             options=[
@@ -88,14 +106,25 @@ def create_sidebars(data):
                 style={"margin-bottom": "20px"}
             )
         ]),
-        html.Label("Companies", style={"font-weight": "500", "margin-bottom": "8px"}),
-        dcc.Dropdown(
-            id="company_filter",
-            options=[{"label": c, "value": c} for c in companies],
-            multi=True,
-            value=companies,
-            style={"margin-bottom": "20px"}
+
+        # ---- Toggleable Companies (SOCIAL) ----
+        dcc.Checklist(
+            id="toggle_company_filter",
+            options=[{"label": " Show Companies filter", "value": "show"}],
+            value=["show"],  # shown by default
+            style={"margin-bottom": "8px"}
         ),
+        html.Div([
+            html.Label("Companies", style={"font-weight": "500", "margin-bottom": "8px"}),
+            dcc.Dropdown(
+                id="company_filter",
+                options=[{"label": c, "value": c} for c in companies],
+                multi=True,
+                value=companies,
+                style={"margin-bottom": "20px"}
+            ),
+        ], id="company_filter_container", style={"display": "block"}),
+
         html.Label("Platforms", style={"font-weight": "500", "margin-bottom": "8px"}),
         dcc.Dropdown(
             id="platform_filter",
@@ -155,14 +184,26 @@ def create_sidebars(data):
                 )
             ])
         ], style={"margin-bottom": "20px"}),
-        html.Label("Channels", style={"font-weight": "500", "margin-bottom": "8px"}),
-        dcc.Dropdown(
-            id="entity_filter",
-            options=[{"label": ch, "value": ch} for company in companies for ch in company_channels[company]],
-            multi=True,
-            value=[ch for ch_list in company_channels.values() for ch in ch_list],
-            style={"margin-bottom": "20px"}
+
+        # --- Toggle + container for Channels filter (hidden by default) ---
+        dcc.Checklist(
+            id="toggle_entity_filter",
+            options=[{"label": " Show Channels filter", "value": "show"}],
+            value=[],  # [] = hidden; use ["show"] to show by default
+            style={"margin-bottom": "8px"}
         ),
+        html.Div([
+            html.Label("Channels", style={"font-weight": "500", "margin-bottom": "8px"}),
+            dcc.Dropdown(
+                id="entity_filter",
+                options=[{"label": ch, "value": ch}
+                         for company in companies for ch in company_channels[company]],
+                multi=True,
+                value=[ch for ch_list in company_channels.values() for ch in ch_list],
+                style={"margin-bottom": "20px"}
+            ),
+        ], id="entity_filter_container", style={"display": "none"}),
+
         html.Label("Message Type", style={"font-weight": "500", "margin-bottom": "8px"}),
         dcc.RadioItems(
             id="uniqueness_toggle",
@@ -198,22 +239,38 @@ def create_sidebars(data):
 
         html.Div(id="analytics_post_count_badge", className="post-count-badge", style={"marginBottom": "12px"}),
 
-        html.Label("Date Range", style={"font-weight": "500", "margin-bottom": "8px"}),
-        dcc.DatePickerRange(
-            id='analytics_date_range',
-            start_date=data['attributes.published_at'].min().strftime('%Y-%m-%d'),
-            end_date=data['attributes.published_at'].max().strftime('%Y-%m-%d'),
-            display_format='YYYY-MM-DD',
-            style={"margin-bottom": "20px", "width": "100%"}
+        # Year slider (replaces DatePickerRange)
+        html.Label("Year Range", style={"font-weight": "500", "margin-bottom": "8px"}),
+        dcc.RangeSlider(
+            id="analytics_date_range",            # keep existing id used by callbacks
+            min=min_year,
+            max=max_year,
+            value=[min_year, max_year],
+            step=1,
+            allowCross=False,
+            marks=year_marks(min_year, max_year),
+            tooltip={"placement": "bottom", "always_visible": False},
+            className="angled-slider"
         ),
-        html.Label("Companies", style={"font-weight": "500", "margin-bottom": "8px"}),
-        dcc.Dropdown(
-            id="analytics_company_filter",
-            options=[{"label": c, "value": c} for c in companies],
-            multi=True,
-            value=companies,
-            style={"margin-bottom": "20px"}
+
+        # ---- Toggleable Companies (ANALYTICS) ----
+        dcc.Checklist(
+            id="toggle_analytics_company_filter",
+            options=[{"label": " Show Companies filter", "value": "show"}],
+            value=["show"],  # shown by default
+            style={"margin-top": "20px", "margin-bottom": "8px"}
         ),
+        html.Div([
+            html.Label("Companies", style={"font-weight": "500", "margin-bottom": "8px"}),
+            dcc.Dropdown(
+                id="analytics_company_filter",
+                options=[{"label": c, "value": c} for c in companies],
+                multi=True,
+                value=companies,
+                style={"margin-bottom": "20px"}
+            ),
+        ], id="analytics_company_filter_container", style={"display": "block"}),
+
         html.Label("Platforms", style={"font-weight": "500", "margin-bottom": "8px"}),
         dcc.Dropdown(
             id="analytics_platform_filter",
@@ -256,14 +313,26 @@ def create_sidebars(data):
                 )
             ])
         ], style={"margin-bottom": "20px"}),
-        html.Label("Channels", style={"font-weight": "500", "margin-bottom": "8px"}),
-        dcc.Dropdown(
-            id="analytics_entity_filter",
-            options=[{"label": ch, "value": ch} for company in companies for ch in company_channels[company]],
-            multi=True,
-            value=[ch for ch_list in company_channels.values() for ch in ch_list],
-            style={"margin-bottom": "20px"}
+
+        # --- Toggle + container for Analytics Channels filter (hidden by default) ---
+        dcc.Checklist(
+            id="toggle_analytics_entity_filter",
+            options=[{"label": " Show Channels filter", "value": "show"}],
+            value=[],  # [] = hidden; use ["show"] to show by default
+            style={"margin-bottom": "8px"}
         ),
+        html.Div([
+            html.Label("Channels", style={"font-weight": "500", "margin-bottom": "8px"}),
+            dcc.Dropdown(
+                id="analytics_entity_filter",
+                options=[{"label": ch, "value": ch}
+                         for company in companies for ch in company_channels[company]],
+                multi=True,
+                value=[ch for ch_list in company_channels.values() for ch in ch_list],
+                style={"margin-bottom": "20px"}
+            ),
+        ], id="analytics_entity_filter_container", style={"display": "none"}),
+
         html.Label("Message Type", style={"font-weight": "500", "margin-bottom": "8px"}),
         dcc.RadioItems(
             id="analytics_uniqueness_toggle",
