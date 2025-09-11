@@ -45,6 +45,9 @@ def plot_combined_greenwashing_scores(
     ratios['year'] = ratios['year'].astype(int)
     merged = summary.merge(ratios, on=['company', 'year'], how='left')
 
+    # Filter out rows with no ratio data
+    merged = merged.dropna(subset=['low_carbon_ratio'])
+
     # Compute ratios
     merged['green_ratio'] = merged['pct_green'] / merged['low_carbon_ratio']
     merged['normalized_ratio'] = (

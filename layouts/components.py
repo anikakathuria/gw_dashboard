@@ -20,16 +20,24 @@ classification_labels = {
 # Define the banner component of the dashboard
 banner = html.Div([
     html.Div([
-        html.Div("CLAIMS", style={
+        # LOGO
+        html.Img(
+            src="/assets/cal_logo_3_transparent.png",   # put logo.png inside the "assets" folder
+            style={
+                "height": "60px",    # adjust size
+                "margin-right": "16px"
+            }
+        ),
+        html.Div("|", style={
                 "font-size": "40px",
-                "font-weight": "bold",
+                "font-weight": "thin",
                 "color": "#383838",
                 "text-orientation": "upright",
                 "height": "10%",
                 "display": "flex",
                 "align-items": "left",
                 "justify-content": "left",
-                "padding-right": "16px",
+                "padding-right": "1px",
                 "margin-bottom": "3px"
             }),
             html.Div([

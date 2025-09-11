@@ -50,7 +50,7 @@ def process_data_csv(data, channel_mapping):
 
     # Split the "y_pred" column into individual binary fields
     fields = [
-        "fossil_fuel", "primary_product", "petrochemical_product", "ff_infrastructure_production",
+        "fossil_fuel", "primary_product", "petrochemical_product", "infrastructure_production",
         "green", "renewable_energy", "emissions_reduction", "false_solutions", "recycling"
     ]
     y_pred_split = data["y_pred"].str.split(",", expand=True)
@@ -66,7 +66,7 @@ def process_data_csv(data, channel_mapping):
     # Add "other_fossil" field
     data["other_fossil"] = (
         (data["fossil_fuel"] == 1) &
-        (data[["primary_product", "petrochemical_product", "ff_infrastructure_production"]].sum(axis=1) == 0)
+        (data[["primary_product", "petrochemical_product", "infrastructure_production"]].sum(axis=1) == 0)
     ).astype(int)
     data['published_at'] = pd.to_datetime(data['published_at'])
     # Drop duplicates
@@ -181,8 +181,8 @@ def process_data_json(data_json: dict) -> pd.DataFrame:
         'attributes.search_data_fields.channel_data.channel_name',
         'attributes.search_data_fields.platform_name',
         'attributes.engagement_fields.likes_count',
-        'attributes.engagement_fields.comments_count',
-        'attributes.search_data_fields.published_at',
+        #'attributes.engagement_fields.comments_count',
+        #'attributes.search_data_fields.published_at',
         'computed_width',
         'computed_height',
         "green_label_explanation",
@@ -227,7 +227,7 @@ def process_data_json(data_json: dict) -> pd.DataFrame:
 
     # # Assign and coerce to integers (0/1), treating invalid/missing as 0
     # for i, field in enumerate(fields):
-    #     data[field] = pd.to_numeric(y_split[i], errors="coerce").fillna(0).astype(int)
+    #     data[field] = pd.to_numeric(y_split[i],s errors="coerce").fillna(0).astype(int)
 
     data[fields] = data["y_pred"].apply(lambda x: pd.Series(ast.literal_eval(str(x))) if str(x).startswith("[") else pd.Series([0]*len(fields)))
 

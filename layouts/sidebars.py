@@ -289,7 +289,7 @@ def create_sidebars(data):
                     options=[
                         {"label": "Primary Product", "value": "primary_product"},
                         {"label": "Petrochemical Product", "value": "petrochemical_product"},
-                        {"label": "Fossil Fuel Infrastructure", "value": "ff_infrastructure_production"},
+                        {"label": "Fossil Fuel Infrastructure", "value": "infrastructure_production"},
                         {"label": "Other Fossil", "value": "other_fossil"}
                     ],
                     value=[],

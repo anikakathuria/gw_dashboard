@@ -41,7 +41,7 @@ with open(codebook_path, "r") as f:
 # data = pd.read_csv(data_path)
 # data = process_data_csv(data, channel_mapping)
 
-data = json.load(open("data/dashboard_1.2_sample_english_dimensions_parententities.json"))
+data = json.load(open("data/junkipedia_50k_dashboard_ready.json"))
 data = process_data_json(data)
 print(f"Loaded {len(data)} posts")
 
