@@ -12,6 +12,7 @@ def register_filter_callbacks(app, data):
     Returns:
         None
     """
+    # --- Dependent options: Channels list follows Companies selection (SOCIAL) ---
     @app.callback(
         [Output("entity_filter", "options"),
          Output("entity_filter", "value")],
@@ -19,7 +20,8 @@ def register_filter_callbacks(app, data):
     )
     def update_channels(selected_companies):
         """
-        Update the options for the channel filter based on the selected companies.
+        Populate channel options based on selected companies.
+        Keep selection visually empty (value=[]), and treat empty selection as "all" downstream.
         Arguments:
             selected_companies (list): List of selected companies.  
         Returns:
@@ -27,16 +29,19 @@ def register_filter_callbacks(app, data):
             channels (list): List of unique channels for the selected companies.
         """
         if not selected_companies:
-            return [], []
-        channels = []
-        for company in selected_companies:
-            company_channels = data.loc[
-                data['company'] == company, 'attributes.search_data_fields.channel_data.channel_name'
-            ].dropna().unique()
-            channels.extend(company_channels)
+            pool = data  # no company selected -> show all channels as options
+        else:
+            pool = data[data['company'].isin(selected_companies)]
+
+        channels = (
+            pool['attributes.search_data_fields.channel_data.channel_name']
+            .dropna()
+            .unique()
+            .tolist()
+        )
         channels = sorted(set(channels))
         options = [{"label": ch, "value": ch} for ch in channels]
-        return options, channels
+        return options, []  # visually empty even though options exist
 
     # --- Dependent options: Channels list follows Companies selection (ANALYTICS) ---
     @app.callback(
@@ -46,7 +51,8 @@ def register_filter_callbacks(app, data):
     )
     def update_analytics_channels(selected_companies):
         """
-        Update the options for the analytics channel filter based on the selected companies.
+        Populate analytics channel options based on selected companies.
+        Keep selection visually empty (value=[]), and treat empty selection as "all" downstream.
         Arguments:
             selected_companies (list): List of selected companies.
 
@@ -55,16 +61,19 @@ def register_filter_callbacks(app, data):
             channels (list): List of unique channels for the selected companies.
         """
         if not selected_companies:
-            return [], []
-        channels = []
-        for company in selected_companies:
-            company_channels = data.loc[
-                data['company'] == company, 'attributes.search_data_fields.channel_data.channel_name'
-            ].dropna().unique()
-            channels.extend(company_channels)
+            pool = data
+        else:
+            pool = data[data['company'].isin(selected_companies)]
+
+        channels = (
+            pool['attributes.search_data_fields.channel_data.channel_name']
+            .dropna()
+            .unique()
+            .tolist()
+        )
         channels = sorted(set(channels))
         options = [{"label": ch, "value": ch} for ch in channels]
-        return options, channels
+        return options, []  # visually empty
 
     # --- View-specific UI visibility (Social) ---
     @app.callback(
@@ -98,6 +107,27 @@ def register_filter_callbacks(app, data):
         """
         # Hide classification multi-select in comparison mode
         return {"display": "none"} if view_toggle == "compare_posts" else {"display": "block"}
+    
+   # Slider years
+    @app.callback(
+        Output("sm_year_range", "children"),
+        Input("date_range", "value")
+    )
+    def show_social_year_range(years):
+        if years and len(years) == 2:
+            y0, y1 = int(years[0]), int(years[1])
+            return f"{y0} – {y1}"
+        return "—"
+
+    @app.callback(
+        Output("an_year_range", "children"),
+        Input("analytics_date_range", "value")
+    )
+    def show_analytics_year_range(years):
+        if years and len(years) == 2:
+            y0, y1 = int(years[0]), int(years[1])
+            return f"{y0} – {y1}"
+        return "—"
 
     # --- Sidebar visibility per tab ---
     @app.callback(
@@ -122,8 +152,7 @@ def register_filter_callbacks(app, data):
             return {"display": "none"}, {"display": "block"}, {"display": "none"}
         return {"display": "none"}, {"display": "none"}, {"display": "block"}
 
-    # === NEW: Show/Hide containers for COMPANIES & CHANNELS (both sidebars) ===
-
+    # Show/Hide containers for COMPANIES & CHANNELS (both sidebars)
     # Social: Companies
     @app.callback(
         Output("company_filter_container", "style"),
@@ -176,7 +205,7 @@ def register_filter_callbacks(app, data):
     )
     def reset_social_filters(n_clicks):
         """
-        Reset the filters in the social media tab to their default values.
+        Reset social filters to defaults. Keep multi-selects visually empty (value=[]).
         Arguments:
             n_clicks (int): Number of clicks on the reset button.
         Returns:
@@ -195,20 +224,18 @@ def register_filter_callbacks(app, data):
         if not n_clicks:
             return dash.no_update
 
-        companies = sorted(data['company'].dropna().unique())
-        platforms = sorted(data['attributes.search_data_fields.platform_name'].dropna().unique())
         min_year = int(data['attributes.published_at'].min().year)
         max_year = int(data['attributes.published_at'].max().year)
 
         return (
             "",                       # keyword_search
-            "compare_posts",          # view_toggle
+            "all_posts",          # view_toggle
             "green",                  # left_view
             "brown",                  # right_view
-            [min_year, max_year],     # date_range (RangeSlider)
-            companies,                # company_filter
-            platforms,                # platform_filter
-            ["green", "brown", "green_brown", "misc"],  # classification_dropdown
+            [min_year, max_year],     # date_range
+            [],                       # company_filter -> visually empty
+            [],                       # platform_filter -> visually empty
+            ["green", "brown", "green_brown", "misc"],  # classification_dropdown (keep all selected)
             "all",                    # uniqueness_toggle
             [],                       # social_fossil_subcategories
             [],                       # social_green_subcategories
@@ -224,14 +251,14 @@ def register_filter_callbacks(app, data):
          Output("analytics_uniqueness_toggle", "value"),
          Output("analytics_fossil_subcategories", "value"),
          Output("analytics_green_subcategories", "value"),
-         Output("toggle_analytics_company_filter", "value"),   # show Companies after reset
-         Output("toggle_analytics_entity_filter", "value")],   # hide Channels after reset
+         Output("toggle_analytics_company_filter", "value"),
+         Output("toggle_analytics_entity_filter", "value")],
         [Input("reset_analytics_filters", "n_clicks")],
         prevent_initial_call=True
     )
     def reset_analytics_filters(n_clicks):
         """
-        Reset the filters in the analytics tab to their default values.
+        Reset analytics filters to defaults. Keep multi-selects visually empty (value=[]).
         Arguments:
             n_clicks (int): Number of clicks on the reset button.
         
@@ -246,15 +273,13 @@ def register_filter_callbacks(app, data):
         if not n_clicks:
             return dash.no_update
 
-        companies = sorted(data['company'].dropna().unique())
-        platforms = sorted(data['attributes.search_data_fields.platform_name'].dropna().unique())
         min_year = int(data['attributes.published_at'].min().year)
         max_year = int(data['attributes.published_at'].max().year)
 
         return (
             [min_year, max_year],  # analytics_date_range
-            companies,             # analytics_company_filter
-            platforms,             # analytics_platform_filter
+            [],                    # analytics_company_filter -> visually empty
+            [],                    # analytics_platform_filter -> visually empty
             "all",                 # analytics_uniqueness_toggle
             [],                    # analytics_fossil_subcategories
             [],                    # analytics_green_subcategories

@@ -3,7 +3,7 @@ from dash import dcc, html
 import pandas as pd
 import json
 import requests
-from flask import Response
+from flask import Response, request
 from functools import lru_cache
 from bs4 import BeautifulSoup
 
@@ -118,11 +118,11 @@ register_navigation_callbacks(app)
 register_content_callbacks(app, data, codebook, green_brown_colors, classification_labels)
 
 @lru_cache(maxsize=150)
-def fetch_junkipedia_post_html(post_id):
+def fetch_junkipedia_post_html(post_id, highlight_term=None):
     """
     Proxy for Junkipedia posts. Fetches the post and returns a minimal HTML embedding
     with the post content, injecting CSS to hide inner scrollbars while preserving
-    full content visibility.
+    full content visibility, plus an optional keyword highlighter.
     """
     resp = requests.get(f"https://www.junkipedia.org/posts/{post_id}")
     if resp.status_code != 200:
@@ -134,7 +134,7 @@ def fetch_junkipedia_post_html(post_id):
     base = soup.new_tag('base', href="https://www.junkipedia.org/")
     head.insert(0, base)
 
-    for tag in head.find_all(['link','script']):
+    for tag in head.find_all(['link', 'script']):
         if tag.has_attr('href') and isinstance(tag['href'], str) and tag['href'].startswith('/'):
             tag['href'] = "https://www.junkipedia.org" + tag['href']
         if tag.has_attr('src') and isinstance(tag['src'], str) and tag['src'].startswith('/'):
@@ -164,13 +164,54 @@ def fetch_junkipedia_post_html(post_id):
         max-width: 100%;
         box-sizing: border-box;
       }
+      /* highlight style */
+      mark { background: #ffea94; color: inherit; padding: 0 .1em; border-radius: .15em; }
     """
     head.append(style)
 
+    # Inject a lightweight client-side highlighter.
+    # It prefers the Python-provided highlight_term; if absent, it reads from ?hl=...
+    script = soup.new_tag('script')
+    script.string = f"""
+      (function(){{
+        function escapeRegExp(s){{return s.replace(/[.*+?^${{}}()|[\\]\\\\]/g,'\\\\$&');}}
+        function highlight(term){{
+          if(!term || !term.trim()) return;
+          var rx = new RegExp(escapeRegExp(term), 'gi');
+          var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+          var nodes=[], n;
+          while(n = walker.nextNode()) {{
+            var p = n.parentNode;
+            if(!p) continue;
+            var tag = p.nodeName;
+            if(tag==='SCRIPT'||tag==='STYLE'||tag==='NOSCRIPT'||tag==='IFRAME') continue;
+            if(n.nodeValue && rx.test(n.nodeValue)) nodes.push(n);
+          }}
+          nodes.forEach(function(text){{
+            var span = document.createElement('span');
+            var html = text.nodeValue.replace(rx, function(m){{ return '<mark>'+m+'</mark>'; }});
+            span.innerHTML = html;
+            text.parentNode.replaceChild(span, text);
+          }});
+        }}
+        document.addEventListener('DOMContentLoaded', function(){{
+          var term = {json.dumps(highlight_term) if highlight_term is not None else 'null'};
+          if(!term){{
+            try {{ term = new URLSearchParams(location.search).get('hl'); }} catch(_){{
+              term = null;
+            }}
+          }}
+          if(term) highlight(term);
+        }});
+      }})();
+      """
+    head.append(script)
+
+    # Build <head> after injecting style & script
     head_html = str(head)
-    
+
     # Extract the posts wrapper with better error handling
-    outer_list = soup.find_all('div', {'data-controller':'posts'})
+    outer_list = soup.find_all('div', {'data-controller': 'posts'})
     if not outer_list:
         outer = soup.body or soup
     else:
@@ -181,7 +222,7 @@ def fetch_junkipedia_post_html(post_id):
 
     body_html = f'<div class="embedded-post-wrapper">{str(outer)}</div>'
 
-    # Minimal page with injected CSS
+    # Minimal page with injected CSS and highlighter
     html = f"""<!DOCTYPE html>
 <html>
   {head_html}
@@ -194,7 +235,9 @@ def fetch_junkipedia_post_html(post_id):
 
 @app.server.route('/junkipedia_proxy/<post_id>')
 def junkipedia_proxy(post_id):
-    html, status = fetch_junkipedia_post_html(post_id)
+    # Read ?hl=... from the iframe URL; pass it along (optional)
+    hl = request.args.get('hl')
+    html, status = fetch_junkipedia_post_html(post_id, highlight_term=hl)
     if html is None:
         return Response("…", status=status)
     return Response(html, content_type='text/html')

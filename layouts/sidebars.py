@@ -5,15 +5,28 @@ def create_sidebars(data):
     Creates the sidebars for the dashboard for each of the three tabs: Post Feed, Analytics, and About.
     Returns a tuple: (social_sidebar, analytics_sidebar, about_sidebar).
     """
-    # Get unique companies and channels
-    companies = sorted(data['company'].dropna().unique())
+    # Precompute uniques / options
+    companies = sorted(data['company'].dropna().unique().tolist())
+
+    # Channels per company (dropna() to avoid None/NaN)
     company_channels = {
         company: sorted(
-            data[data['company'] == company]['attributes.search_data_fields.channel_data.channel_name'].unique()
+            data.loc[data['company'] == company, 'attributes.search_data_fields.channel_data.channel_name']
+                .dropna()
+                .unique()
+                .tolist()
         )
         for company in companies
     }
+    # All platforms
+    platforms = sorted(
+        data['attributes.search_data_fields.platform_name']
+        .dropna()
+        .unique()
+        .tolist()
+    )
 
+    # Year range
     min_year = int(data['attributes.published_at'].min().year)
     max_year = int(data['attributes.published_at'].max().year)
 
@@ -25,11 +38,22 @@ def create_sidebars(data):
         marks[a] = str(a)
         marks[b] = str(b)
         return marks
-    
+
+    # Convenience for repeated dropdown props
+    common_multi_props = dict(
+        multi=True,
+        clearable=True,
+        persistence=True,
+        persisted_props=["value"],
+        persistence_type="session",
+        style={"margin-bottom": "20px"},
+        #virtualized=True
+    )
+
     # Social Media Sidebar
     social_sidebar = html.Div([
         html.H3("Feed Filters", style={"margin-bottom": "14px", "color": "#1a237e", "font-weight": "600"}),
-        
+
         # Reset button
         html.Button(
             "Reset All Filters",
@@ -46,7 +70,7 @@ def create_sidebars(data):
             }
         ),
 
-        # Post count badge mount point (updated by content callback)
+        # Post count badge mount point
         html.Div(id="post_count_badge", className="post-count-badge", style={"marginBottom": "12px"}),
 
         html.Label("Keyword Search", style={"font-weight": "500", "margin-bottom": "8px"}),
@@ -56,18 +80,29 @@ def create_sidebars(data):
             placeholder="Search in posts...",
             style={"width": "100%", "padding": "8px", "margin-bottom": "20px"}
         ),
-        # Year slider (replaces DatePickerRange)
-        html.Label("Year Range", style={"font-weight": "500", "margin-bottom": "8px"}),
-        dcc.RangeSlider(
-            id="date_range",                       # keep existing id used by callbacks
-            min=min_year,
-            max=max_year,
-            value=[min_year, max_year],
-            step=1,
-            allowCross=False,
-            marks=year_marks(min_year, max_year),
-            tooltip={"placement": "bottom", "always_visible": False},
-            className="angled-slider"
+
+        # Year slider
+        html.Div(
+            [
+                html.Label("Year Range", style={"font-weight": "500"}),
+                html.Div(f"{min_year} – {max_year}", id="sm_year_range", className="range-pill")
+            ],
+            style={"display": "flex", "justifyContent": "space-between", "alignItems": "center", "margin-bottom": "8px"}
+        ),
+        html.Div(
+            dcc.RangeSlider(
+                id="date_range",
+                min=min_year,
+                max=max_year,
+                value=[min_year, max_year],
+                step=1,
+                allowCross=False,
+                marks=None,  # remove all labels
+                tooltip={"placement": "bottom", "always_visible": False},
+                updatemode="drag",    
+                className="angled-slider"
+            ),
+            style={"paddingTop": "20px"}  # add space above the slider
         ),
 
         html.Label("View", style={"font-weight": "500", "margin-bottom": "8px", "margin-top": "20px"}),
@@ -77,7 +112,7 @@ def create_sidebars(data):
                 {"label": "Comparison View", "value": "compare_posts"},
                 {"label": "All Posts", "value": "all_posts"},
             ],
-            value="compare_posts",
+            value="all_posts",
             style={"margin-bottom": "20px"}
         ),
         html.Div(id="comparison_subtoggle", children=[
@@ -119,20 +154,21 @@ def create_sidebars(data):
             dcc.Dropdown(
                 id="company_filter",
                 options=[{"label": c, "value": c} for c in companies],
-                multi=True,
-                value=companies,
-                style={"margin-bottom": "20px"}
+                value=[],                                # visually empty
+                placeholder="Filter by company…",
+                **common_multi_props
             ),
         ], id="company_filter_container", style={"display": "block"}),
 
         html.Label("Platforms", style={"font-weight": "500", "margin-bottom": "8px"}),
         dcc.Dropdown(
             id="platform_filter",
-            options=[{"label": p, "value": p} for p in sorted(data['attributes.search_data_fields.platform_name'].unique())],
-            multi=True,
-            value=[p for p in sorted(data['attributes.search_data_fields.platform_name'].unique())],
-            style={"margin-bottom": "20px"}
+            options=[{"label": p, "value": p} for p in platforms],
+            value=[],                                    # visually empty
+            placeholder="Filter by platform…",
+            **common_multi_props
         ),
+
         html.Div(id="classification_filter", children=[
             html.Label("Classification", style={"font-weight": "500", "margin-bottom": "8px"}),
             dcc.Dropdown(
@@ -144,10 +180,13 @@ def create_sidebars(data):
                     {"label": "Miscellaneous", "value": "misc"}
                 ],
                 multi=True,
-                value=["green", "brown", "green_brown", "misc"],
+                value=["green", "brown", "green_brown", "misc"],  # keep existing behavior
+                clearable=True,
+                persistence=True, persisted_props=["value"], persistence_type="session",
                 style={"margin-bottom": "20px"}
             )
         ]),
+
         # Subcategory filters
         html.Label("Subcategories", style={"font-weight": "500", "margin-bottom": "8px"}),
         html.Div([
@@ -165,7 +204,6 @@ def create_sidebars(data):
                     style={"margin-bottom": "16px"}
                 )
             ]),
-            
             html.Div([
                 html.Label("Green Categories", style={"font-weight": "500", "margin-bottom": "8px", "color": "#a7caa0"}),
                 dcc.Checklist(
@@ -198,9 +236,9 @@ def create_sidebars(data):
                 id="entity_filter",
                 options=[{"label": ch, "value": ch}
                          for company in companies for ch in company_channels[company]],
-                multi=True,
-                value=[ch for ch_list in company_channels.values() for ch in ch_list],
-                style={"margin-bottom": "20px"}
+                value=[],                                # visually empty
+                placeholder="Filter by channel…",
+                **common_multi_props
             ),
         ], id="entity_filter_container", style={"display": "none"}),
 
@@ -214,14 +252,13 @@ def create_sidebars(data):
             value="all",
             style={"margin-bottom": "20px"}
         )
-        
+
     ], id="social_sidebar", className="sidebar")
 
     # Analytics Sidebar
     analytics_sidebar = html.Div([
         html.H3("Analytics Filters", style={"margin-bottom": "14px", "color": "#1a237e", "font-weight": "600"}),
 
-        # Reset button
         html.Button(
             "Reset All Filters",
             id="reset_analytics_filters",
@@ -239,21 +276,30 @@ def create_sidebars(data):
 
         html.Div(id="analytics_post_count_badge", className="post-count-badge", style={"marginBottom": "12px"}),
 
-        # Year slider (replaces DatePickerRange)
-        html.Label("Year Range", style={"font-weight": "500", "margin-bottom": "8px"}),
-        dcc.RangeSlider(
-            id="analytics_date_range",            # keep existing id used by callbacks
-            min=min_year,
-            max=max_year,
-            value=[min_year, max_year],
-            step=1,
-            allowCross=False,
-            marks=year_marks(min_year, max_year),
-            tooltip={"placement": "bottom", "always_visible": False},
-            className="angled-slider"
+        html.Div(
+            [
+                html.Label("Year Range", style={"font-weight": "500"}),
+                html.Div(f"{min_year} – {max_year}", id="an_year_range", className="range-pill")
+            ],
+            style={"display": "flex", "justifyContent": "space-between", "alignItems": "center", "margin-bottom": "8px"}
+        ),
+        html.Div(
+            dcc.RangeSlider(
+                id="analytics_date_range",
+                min=min_year,
+                max=max_year,
+                value=[min_year, max_year],
+                step=1,
+                allowCross=False,
+                marks=None,  # remove all labels
+                tooltip={"placement": "bottom", "always_visible": False},
+                updatemode="drag",    
+                className="angled-slider"
+            ),
+            style={"paddingTop": "20px"}  # add space above the slider
         ),
 
-        # ---- Toggleable Companies (ANALYTICS) ----
+        # Toggleable Companies (ANALYTICS)
         dcc.Checklist(
             id="toggle_analytics_company_filter",
             options=[{"label": " Show Companies filter", "value": "show"}],
@@ -265,21 +311,22 @@ def create_sidebars(data):
             dcc.Dropdown(
                 id="analytics_company_filter",
                 options=[{"label": c, "value": c} for c in companies],
-                multi=True,
-                value=companies,
-                style={"margin-bottom": "20px"}
+                value=[],                                # visually empty
+                placeholder="Filter by company…",
+                **common_multi_props
             ),
         ], id="analytics_company_filter_container", style={"display": "block"}),
 
         html.Label("Platforms", style={"font-weight": "500", "margin-bottom": "8px"}),
         dcc.Dropdown(
             id="analytics_platform_filter",
-            options=[{"label": p, "value": p} for p in sorted(data['attributes.search_data_fields.platform_name'].unique())],
-            multi=True,
-            value=[p for p in sorted(data['attributes.search_data_fields.platform_name'].unique())],
-            style={"margin-bottom": "20px"}
+            options=[{"label": p, "value": p} for p in platforms],
+            value=[],                                    # visually empty
+            placeholder="Filter by platform…",
+            **common_multi_props
         ),
-        # Subcategory filters
+
+        # Subcategory filters (values aligned with callbacks/content.py)
         html.Label("Subcategories", style={"font-weight": "500", "margin-bottom": "8px"}),
         html.Div([
             html.Div([
@@ -296,16 +343,17 @@ def create_sidebars(data):
                     style={"margin-bottom": "16px"}
                 )
             ]),
-            
             html.Div([
                 html.Label("Green Categories", style={"font-weight": "500", "margin-bottom": "8px", "color": "#a7caa0"}),
                 dcc.Checklist(
                     id="analytics_green_subcategories",
                     options=[
-                        {"label": "Renewable Energy", "value": "renewable_energy"},
-                        {"label": "Emissions Reduction", "value": "emissions_reduction"},
+                        {"label": "Decreasing Emissions", "value": "decreasing_emissions"},
+                        {"label": "Viable Solutions", "value": "viable_solutions"},
                         {"label": "False Solutions", "value": "false_solutions"},
-                        {"label": "Recycling", "value": "recycling"},
+                        {"label": "Recycling & Waste Management", "value": "recycling_waste_management"},
+                        {"label": "Nature & Animal References", "value": "nature_animal_references"},
+                        {"label": "Generic Environmental References", "value": "generic_environmental_references"},
                         {"label": "Other Green", "value": "other_green"}
                     ],
                     value=[],
@@ -327,9 +375,9 @@ def create_sidebars(data):
                 id="analytics_entity_filter",
                 options=[{"label": ch, "value": ch}
                          for company in companies for ch in company_channels[company]],
-                multi=True,
-                value=[ch for ch_list in company_channels.values() for ch in ch_list],
-                style={"margin-bottom": "20px"}
+                value=[],                                # visually empty
+                placeholder="Filter by channel…",
+                **common_multi_props
             ),
         ], id="analytics_entity_filter_container", style={"display": "none"}),
 
@@ -343,12 +391,12 @@ def create_sidebars(data):
             value="all",
             style={"margin-bottom": "20px"}
         )
-        
+
     ], id="analytics_sidebar", className="sidebar", style={"display": "none"})
 
     # About Sidebar
     about_sidebar = html.Div([
         html.P("Select a tab to view and filter content.", style={"font-weight": "500", "margin-bottom": "8px"}),
     ], id="about_sidebar", className="sidebar", style={"display": "none"})
-    
+
     return social_sidebar, analytics_sidebar, about_sidebar

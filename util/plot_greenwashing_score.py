@@ -82,19 +82,19 @@ def plot_combined_greenwashing_scores(
     # Define buttons for three states: raw linear, raw log, normalized linear
     buttons = [
         dict(
-            label="Raw Ratio (Linear)",
-            method="update",
-            args=[
-                {'visible': [i % 2 == 0 for i in range(len(traces))]},
-                {'yaxis': {'type': 'linear'}}
-            ]
-        ),
-        dict(
             label="Raw Ratio (Log)",
             method="update",
             args=[
                 {'visible': [i % 2 == 0 for i in range(len(traces))]},
                 {'yaxis': {'type': 'log'}, 'autorange': False}
+            ]
+        ),
+        dict(
+            label="Raw Ratio (Linear)",
+            method="update",
+            args=[
+                {'visible': [i % 2 == 0 for i in range(len(traces))]},
+                {'yaxis': {'type': 'linear'}}
             ]
         ),
         dict(
@@ -127,5 +127,11 @@ def plot_combined_greenwashing_scores(
         yaxis_title="Greenwashing Score",
         legend_title="Company"
     )
+
+    # Default: Raw Ratio (Log)
+    fig.update_yaxes(type="log")
+    for i, trace in enumerate(fig.data):
+        trace.visible = (i % 2 == 0)
+
 
     return fig

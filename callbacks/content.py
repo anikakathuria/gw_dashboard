@@ -59,6 +59,13 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
     ):
         filtered_data = data.copy()
         print(len(filtered_data))
+
+        # --- small helper: get first existing column name from candidates ---
+        def first_existing(df, candidates):
+            for c in candidates:
+                if c in df.columns:
+                    return c
+            return None
         
         if tab_name == "social_media":
             if sm_years and len(sm_years) == 2:
@@ -86,8 +93,8 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                 "other_green": "green_other" in sm_green_subcategories
             }
         else:  # analytics
-            if sm_years and len(sm_years) == 2:
-                y0, y1 = int(sm_years[0]), int(sm_years[1])
+            if an_years and len(an_years) == 2:
+                y0, y1 = int(an_years[0]), int(an_years[1])
                 start_date, end_date = f"{y0}-01-01", f"{y1}-12-31",
             else:
                 start_date = end_date = None
@@ -109,58 +116,89 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                 "generic_environmental_references": "generic_environmental_references" in an_green_subcategories,
                 "other_green": "green_other" in an_green_subcategories
             }
-        
-        # Apply uniqueness filter
+
+        # ---- pick title/body columns safely (works across schema variants) ----
+        title_col = first_existing(filtered_data, [
+            'attributes.search_data_fields.post_title',
+            'attributes.post_title',
+            'post_title',
+            'title'
+        ])
+        body_col = first_existing(filtered_data, [
+            'attributes.complete_post_text',
+            'complete_post_text',
+            'attributes.search_data_fields.post_text',
+            'post_text',
+            'text',
+            'content'
+        ])
+
+        # Apply uniqueness filter (dedupe) safely on whichever text column exists
         if uniqueness == "unique":
-            filtered_data = url_deduplicate(filtered_data, 'complete_post_text')
-        
-        # Apply keyword search
+            dedup_col = body_col or title_col
+            if dedup_col:
+                filtered_data = url_deduplicate(filtered_data, dedup_col)
+
+        # Apply keyword search robustly (if columns exist)
         if keyword_search:
-            keyword_lower = keyword_search.lower()
-            filtered_data = filtered_data[
-                filtered_data['attributes.search_data_fields.post_title'].str.lower().str.contains(keyword_lower, na=False) |
-                filtered_data['attributes.complete_post_text'].str.lower().str.contains(keyword_lower, na=False)
-            ]
-        
-        # Apply date filter
+            kw = str(keyword_search).lower()
+            # If no searchable columns exist, skip filtering
+            if title_col or body_col:
+                mask = pd.Series(False, index=filtered_data.index)
+                if title_col:
+                    mask = mask | filtered_data[title_col].astype(str).str.lower().str.contains(kw, na=False)
+                if body_col and body_col != title_col:
+                    mask = mask | filtered_data[body_col].astype(str).str.lower().str.contains(kw, na=False)
+                filtered_data = filtered_data[mask]
+
+        # Apply date filter (ensure dtype is comparable)
         if start_date and end_date:
-            filtered_data = filtered_data[
-                (filtered_data['attributes.published_at'] >= start_date) & 
-                (filtered_data['attributes.published_at'] <= end_date)
-            ]
-        
+            col_date = 'attributes.published_at'
+            if col_date in filtered_data.columns:
+                if not pd.api.types.is_datetime64_any_dtype(filtered_data[col_date]):
+                    filtered_data[col_date] = pd.to_datetime(filtered_data[col_date], errors='coerce')
+                filtered_data = filtered_data[
+                    (filtered_data[col_date] >= pd.to_datetime(start_date)) &
+                    (filtered_data[col_date] <= pd.to_datetime(end_date))
+                ]
+
         # Apply company filter
         if companies:
             filtered_data = filtered_data[filtered_data['company'].isin(companies)]
         
         # Apply entity filter
         if entities:
-            filtered_data = filtered_data[filtered_data['attributes.search_data_fields.channel_data.channel_name'].isin(entities)]
+            filtered_data = filtered_data[
+                filtered_data['attributes.search_data_fields.channel_data.channel_name'].isin(entities)
+            ]
         
         # Apply platform filter
         if platforms:
-            filtered_data = filtered_data[filtered_data['attributes.search_data_fields.platform_name'].isin(platforms)]
+            filtered_data = filtered_data[
+                filtered_data['attributes.search_data_fields.platform_name'].isin(platforms)
+            ]
         
         # Apply subcategory filters
         for subcategory, is_active in subcategory_filters.items():
-            if is_active:
+            if is_active and subcategory in filtered_data.columns:
                 filtered_data = filtered_data[filtered_data[subcategory] == 1]
         
         if tab_name == "social_media":
             if classifications:
                 filtered_data = filtered_data[filtered_data['green_brown'].isin(classifications)]
 
-            posts_per_page = 10
+            posts_per_page = 20
             
             if view_toggle == "all_posts":
-                # All Posts View - copy the exact working structure from comparison view
-                posts_per_page = 10
+                # All Posts View
+                posts_per_page = 20
                 start = current_page * posts_per_page
                 end = start + posts_per_page
                 
-                # Get all posts (no filtering by green_brown)
-                all_posts = [create_post_component(row) for _, row in filtered_data.iloc[start:end].iterrows()]
-                
+                all_posts = [
+                    create_post_component(row, highlight=keyword_search)
+                    for _, row in filtered_data.iloc[start:end].iterrows()
+                ]
                 pagination_buttons = html.Div([
                     html.Button(
                         '← Previous',
@@ -217,8 +255,10 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                 start = current_page * posts_per_page
                 end = start + posts_per_page
                 
-                left_posts = [create_post_component(row) for _, row in left_data.iloc[start:end].iterrows()]
-                right_posts = [create_post_component(row) for _, row in right_data.iloc[start:end].iterrows()]
+                left_posts = [create_post_component(row, highlight=keyword_search)
+                            for _, row in left_data.iloc[start:end].iterrows()]
+                right_posts = [create_post_component(row, highlight=keyword_search)
+                            for _, row in right_data.iloc[start:end].iterrows()]
                 
                 max_posts = max(len(left_data), len(right_data))
                 
@@ -265,7 +305,7 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                     ], style={
                         "display": "flex",
                         "gap": "4%",
-                        "alignItems": "flex-start"   # <- keep both titles pinned to the top
+                        "alignItems": "flex-start"
                     }),
                     pagination_buttons
                 ])
@@ -300,9 +340,6 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                         "This section shows the distribution of social media posts across categories and sub-categories.",
                         className="analytics-description"
                     ),
-                    
-                    
-                    
                     html.Div(
                         dcc.Graph(
                             figure=overview_fig,
@@ -363,6 +400,8 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
                 html.Button('← Previous', id='prev_page', n_clicks=0, className="pagination-button"),
                 html.Button('Next →', id='next_page', n_clicks=0, className="pagination-button")
             ], style={"display": "none"})
+
+            total_posts = len(data)
             
             content_div = html.Div([
                 # About Section
@@ -475,5 +514,4 @@ def register_content_callbacks(app, data, codebook, green_brown_colors, classifi
             ], className="analytics-container")
 
             # For About, either show nothing or a dataset summary in the sidebar
-            sidebar_badge = ""  # or: html.Div(["Dataset size: ", html.Strong(f"{len(data)}"), " posts"], className="post-count")
             return content_div, "", ""

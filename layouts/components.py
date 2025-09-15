@@ -1,4 +1,5 @@
 from dash import html, dcc
+from urllib.parse import quote_plus
 
 # Define color schemes and classification labels
 green_brown_colors = {
@@ -82,7 +83,7 @@ banner = html.Div([
         "padding": "0 20px"
     })
 
-def create_post_component(row):
+def create_post_component(row, highlight=None):
     """
     Create a post component for the dashboard.
     Retrieves the Junkipedia HTML embedding and displays it in an iframe.
@@ -107,10 +108,12 @@ def create_post_component(row):
     height = row.get('computed_height', 800)
     width = "360px"
     
+    hl_param = f"?hl={quote_plus(highlight)}" if highlight else ""
+
     # Create the iframe for the Junkipedia post with bottom 20px cut off
     junkipedia_iframe = html.Div([
         html.Iframe(
-            src=f"/junkipedia_proxy/{post_id}",
+            src=f"/junkipedia_proxy/{post_id}{hl_param}",
             style={
                 "width": f"{width}",
                 "height": f"{height}", 
@@ -125,7 +128,7 @@ def create_post_component(row):
         "width": f"{width}",
         "position": "relative",
     })
-    
+
     return html.Div([
         # Junkipedia content in an iframe - centered
         html.Div([
