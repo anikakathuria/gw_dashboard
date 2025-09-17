@@ -2,9 +2,10 @@ import dash
 from dash import dcc, html
 import pandas as pd
 import json
+import pathlib
+import time
 import requests
 from flask import Response, request
-from functools import lru_cache
 from bs4 import BeautifulSoup
 
 # Import layouts
@@ -28,7 +29,7 @@ from process_data import process_data_json
 
 # Load data
 codebook_path = "data/codebook.json"
-data_path = "data/final_greenwashing_dataset_for_dashboard_english_only.csv"
+data_path = ""
 channel_mapping_path = "data/channel_mapping.csv"
 
 channel_mapping = pd.read_csv(channel_mapping_path)
@@ -37,11 +38,7 @@ channel_mapping = pd.read_csv(channel_mapping_path)
 with open(codebook_path, "r") as f:
     codebook = json.load(f)
 
-# Load and preprocess data
-# data = pd.read_csv(data_path)
-# data = process_data_csv(data, channel_mapping)
-
-data = json.load(open("data/junkipedia_50k_dashboard_ready.json"))
+data = json.load(open(data_path))
 data = process_data_json(data)
 print(f"Loaded {len(data)} posts")
 
@@ -53,20 +50,6 @@ app = dash.Dash(
         "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
     ]
 )
-
-# def print_nan_summary(df):
-#     nan_counts = df.isna().sum()
-#     summary = pd.DataFrame({
-#         'Column': nan_counts.index,
-#         'NaN Count': nan_counts.values
-#     })
-#     # Ensure full output is shown
-#     pd.set_option('display.max_rows', None)
-#     print(summary)
-#     pd.reset_option('display.max_rows')
-
-# print_nan_summary(data)
-
 
 # Custom CSS - Load from external file
 with open('styles/custom.css', 'r') as f:
@@ -104,10 +87,7 @@ app.layout = html.Div([
     html.Div([about_sidebar, social_sidebar, analytics_sidebar]),
     html.Div([content_layout], className="main-content"),
     dcc.Store(id='current_page', data=0),
-    # Add a hidden div for the scroll-to-top callback
     html.Div(id='_', style={'display': 'none'}),
-    # Add pagination buttons to the layout but hide them initially
-    # They will be shown/hidden by the content callback as needed
     html.Button('← Previous', id='prev_page', n_clicks=0, style={'display': 'none'}),
     html.Button('Next →', id='next_page', n_clicks=0, style={'display': 'none'})
 ])
@@ -117,61 +97,106 @@ register_filter_callbacks(app, data)
 register_navigation_callbacks(app)
 register_content_callbacks(app, data, codebook, green_brown_colors, classification_labels)
 
-@lru_cache(maxsize=150)
-def fetch_junkipedia_post_html(post_id, highlight_term=None):
-    """
-    Proxy for Junkipedia posts. Fetches the post and returns a minimal HTML embedding
-    with the post content, injecting CSS to hide inner scrollbars while preserving
-    full content visibility, plus an optional keyword highlighter.
-    """
-    resp = requests.get(f"https://www.junkipedia.org/posts/{post_id}")
-    if resp.status_code != 200:
-        return None, resp.status_code
+# ---------- Junkipedia proxy (persistent + conditional cache + highlighter) ----------
 
-    soup = BeautifulSoup(resp.text, 'html.parser')
-    head = soup.head or soup.new_tag('head')
+CACHE_DIR = pathlib.Path("/tmp/junkipedia_proxy_cache")
+CACHE_DIR.mkdir(parents=True, exist_ok=True)
+TTL_SECONDS = 60 * 60 * 24  # 24h
+CONNECT_TIMEOUT = 5
+READ_TIMEOUT = 15
+MAX_RETRIES = 2
+BASE_URL = "https://www.junkipedia.org"
+POST_URL = BASE_URL + "/posts/{post_id}"
+HL_PLACEHOLDER = "__HL_PLACEHOLDER__"  # token replaced at serve-time
 
-    base = soup.new_tag('base', href="https://www.junkipedia.org/")
+# Global session w/ retries and pooling
+_session = requests.Session()
+_adapter = requests.adapters.HTTPAdapter(
+    pool_connections=10, pool_maxsize=20, max_retries=MAX_RETRIES
+)
+_session.mount("http://", _adapter)
+_session.mount("https://", _adapter)
+
+
+def _paths_for(post_id: str):
+    safe = "".join(c for c in post_id if c.isalnum() or c in ("-", "_"))
+    body = CACHE_DIR / f"{safe}.html"
+    meta = CACHE_DIR / f"{safe}.json"
+    return body, meta
+
+
+def _load_cache(post_id: str):
+    body_path, meta_path = _paths_for(post_id)
+    if not body_path.exists():
+        return None, None
+    try:
+        meta = json.loads(meta_path.read_text()) if meta_path.exists() else {}
+    except Exception:
+        meta = {}
+    try:
+        html_template = body_path.read_text()
+    except Exception:
+        html_template = None
+    return html_template, meta
+
+
+def _save_cache(post_id: str, html_template: str, meta: dict):
+    body_path, meta_path = _paths_for(post_id)
+    try:
+        body_path.write_text(html_template)
+        meta_path.write_text(json.dumps(meta, ensure_ascii=False))
+    except Exception:
+        # Best-effort cache; failures shouldn't break the request
+        pass
+
+
+def _stale(meta: dict) -> bool:
+    fetched_at = meta.get("fetched_at", 0)
+    return (time.time() - fetched_at) > TTL_SECONDS
+
+
+def _build_processed_html(resp_text: str, post_id: str) -> str:
+    """
+    Build a minimal embed HTML for the Junkipedia post list containing this post.
+    The result contains a placeholder token for the highlight term that is replaced
+    at serve-time so the disk cache does not fragment by hl value.
+    """
+    try:
+        soup = BeautifulSoup(resp_text, "lxml")
+    except Exception:
+        soup = BeautifulSoup(resp_text, "html.parser")
+
+    head = soup.head or soup.new_tag("head")
+    if not soup.head:
+        if soup.html:
+            soup.html.insert(0, head)
+        else:
+            soup.insert(0, head)
+
+    # base href to fix relative URLs
+    base = soup.new_tag("base", href=BASE_URL + "/")
     head.insert(0, base)
 
-    for tag in head.find_all(['link', 'script']):
-        if tag.has_attr('href') and isinstance(tag['href'], str) and tag['href'].startswith('/'):
-            tag['href'] = "https://www.junkipedia.org" + tag['href']
-        if tag.has_attr('src') and isinstance(tag['src'], str) and tag['src'].startswith('/'):
-            tag['src'] = "https://www.junkipedia.org" + tag['src']
+    # Normalize href/src pointing to root
+    for tag in head.find_all(["link", "script"]):
+        if tag.has_attr("href") and isinstance(tag["href"], str) and tag["href"].startswith("/"):
+            tag["href"] = BASE_URL + tag["href"]
+        if tag.has_attr("src") and isinstance(tag["src"], str) and tag["src"].startswith("/"):
+            tag["src"] = BASE_URL + tag["src"]
 
-    # Inject CSS to hide scrollbars but preserve content visibility
-    style = soup.new_tag('style')
+    # CSS
+    style = soup.new_tag("style")
     style.string = """
-      html, body {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        overflow: hidden;              /* hide inner scrollbars */
-        background: transparent;
-      }
-      * { scrollbar-width: none; }     /* Firefox */
-      *::-webkit-scrollbar { display: none; }  /* Chromium/WebKit */
-      .embedded-post-wrapper {
-        width: 100%;
-        max-width: 100%;
-        overflow: hidden;
-        padding-left: 10px;            /* Add left padding to prevent cutoff */
-        box-sizing: border-box;        /* Ensure padding is included in width */
-      }
-      /* Ensure content doesn't get clipped */
-      .embedded-post-wrapper > * {
-        max-width: 100%;
-        box-sizing: border-box;
-      }
-      /* highlight style */
+      html, body { margin:0; padding:0; height:100%; overflow:hidden; background:transparent; }
+      * { scrollbar-width: none; } *::-webkit-scrollbar { display: none; }
+      .embedded-post-wrapper { width:100%; max-width:100%; overflow:hidden; padding-left:10px; box-sizing:border-box; }
+      .embedded-post-wrapper > * { max-width:100%; box-sizing:border-box; }
       mark { background: #ffea94; color: inherit; padding: 0 .1em; border-radius: .15em; }
     """
     head.append(style)
 
-    # Inject a lightweight client-side highlighter.
-    # It prefers the Python-provided highlight_term; if absent, it reads from ?hl=...
-    script = soup.new_tag('script')
+    # JS highlighter: uses HL_PLACEHOLDER at build time; replaced when serving
+    script = soup.new_tag("script")
     script.string = f"""
       (function(){{
         function escapeRegExp(s){{return s.replace(/[.*+?^${{}}()|[\\]\\\\]/g,'\\\\$&');}}
@@ -195,7 +220,8 @@ def fetch_junkipedia_post_html(post_id, highlight_term=None):
           }});
         }}
         document.addEventListener('DOMContentLoaded', function(){{
-          var term = {json.dumps(highlight_term) if highlight_term is not None else 'null'};
+          // This gets replaced to a JSON string or 'null' at serve-time:
+          var term = {HL_PLACEHOLDER};
           if(!term){{
             try {{ term = new URLSearchParams(location.search).get('hl'); }} catch(_){{
               term = null;
@@ -204,26 +230,24 @@ def fetch_junkipedia_post_html(post_id, highlight_term=None):
           if(term) highlight(term);
         }});
       }})();
-      """
+    """
     head.append(script)
 
-    # Build <head> after injecting style & script
     head_html = str(head)
 
-    # Extract the posts wrapper with better error handling
-    outer_list = soup.find_all('div', {'data-controller': 'posts'})
+    # Keep only the matching post
+    outer_list = soup.find_all("div", {"data-controller": "posts"})
     if not outer_list:
         outer = soup.body or soup
     else:
         outer = outer_list[0]
-        for item in outer.select('div.post-item'):
+        for item in outer.select("div.post-item"):
             if not item.select_one(f"a[href$='/posts/{post_id}']"):
                 item.decompose()
 
     body_html = f'<div class="embedded-post-wrapper">{str(outer)}</div>'
 
-    # Minimal page with injected CSS and highlighter
-    html = f"""<!DOCTYPE html>
+    return f"""<!DOCTYPE html>
 <html>
   {head_html}
   <body style="margin:0;padding:0;display:flex;justify-content:center;overflow:hidden;">
@@ -231,17 +255,91 @@ def fetch_junkipedia_post_html(post_id, highlight_term=None):
   </body>
 </html>
 """
-    return html, 200
+
+
+def _revalidate_from_origin(post_id: str, cached_meta: dict):
+    """
+    Fetch from origin using ETag/Last-Modified when possible; return (html_template, status, new_meta).
+    The html includes HL_PLACEHOLDER (not an inlined term) to keep the cache generic.
+    """
+    headers = {}
+    if cached_meta:
+        if cached_meta.get("etag"):
+            headers["If-None-Match"] = cached_meta["etag"]
+        if cached_meta.get("last_modified"):
+            headers["If-Modified-Since"] = cached_meta["last_modified"]
+
+    url = POST_URL.format(post_id=post_id)
+    r = _session.get(url, headers=headers, timeout=(CONNECT_TIMEOUT, READ_TIMEOUT))
+    if r.status_code == 304:
+        new_meta = dict(cached_meta or {})
+        new_meta["fetched_at"] = time.time()
+        return None, 304, new_meta
+
+    if r.status_code != 200:
+        return None, r.status_code, cached_meta or {}
+
+    html_template = _build_processed_html(r.text, post_id)
+    new_meta = {
+        "fetched_at": time.time(),
+        "etag": r.headers.get("ETag"),
+        "last_modified": r.headers.get("Last-Modified"),
+    }
+    return html_template, 200, new_meta
+
+
+def _finalize_for_term(html_template: str, highlight_term: str) -> str:
+    """
+    Replace the HL placeholder with a safe JSON string representing the term,
+    or 'null' when no term is provided.
+    """
+    term_js = json.dumps(highlight_term) if highlight_term else 'null'
+    return html_template.replace(HL_PLACEHOLDER, term_js)
+
+
+def fetch_junkipedia_post_html(post_id: str, highlight_term: str):
+    """
+    Fast, persistent, conditional-cached proxy.
+    Returns (html:str|None, status:int).
+    Caches a template HTML with a placeholder for highlight term.
+    """
+    cached_html_tmpl, cached_meta = _load_cache(post_id)
+
+    # Serve fresh cache immediately
+    if cached_html_tmpl and cached_meta and not _stale(cached_meta):
+        return _finalize_for_term(cached_html_tmpl, highlight_term), 200
+
+    # Revalidate with origin
+    try:
+        html_tmpl, status, new_meta = _revalidate_from_origin(post_id, cached_meta)
+        if status == 304 and cached_html_tmpl:
+            _save_cache(post_id, cached_html_tmpl, new_meta)
+            return _finalize_for_term(cached_html_tmpl, highlight_term), 200
+        if status == 200 and html_tmpl:
+            _save_cache(post_id, html_tmpl, new_meta)
+            return _finalize_for_term(html_tmpl, highlight_term), 200
+        # Non-200/304: fall back to stale if available
+        if cached_html_tmpl:
+            return _finalize_for_term(cached_html_tmpl, highlight_term), 200
+        return None, status
+    except Exception:
+        if cached_html_tmpl:
+            return _finalize_for_term(cached_html_tmpl, highlight_term), 200
+        return None, 502
+
 
 @app.server.route('/junkipedia_proxy/<post_id>')
 def junkipedia_proxy(post_id):
     # Read ?hl=... from the iframe URL; pass it along (optional)
     hl = request.args.get('hl')
-    html, status = fetch_junkipedia_post_html(post_id, highlight_term=hl)
-    if html is None:
-        return Response("…", status=status)
-    return Response(html, content_type='text/html')
+    html_out, status = fetch_junkipedia_post_html(post_id, highlight_term=hl)
+    if html_out is None:
+        return Response("Unable to load post.", status=status)
+    resp = Response(html_out, content_type='text/html', status=200)
+    # Encourage browser/CDN caching; responses vary by query string (hl), which is OK.
+    resp.headers["Cache-Control"] = f"public, max-age={TTL_SECONDS}"
+    return resp
+
 
 if __name__ == "__main__":
     app.run(debug=True)
-    
