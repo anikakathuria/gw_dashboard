@@ -29,8 +29,9 @@ from process_data import process_data_json
 
 # Load data
 codebook_path = "data/codebook.json"
-data_path = ""
+data_path = "data/junkipedia_50k_dashboard_ready.json"
 channel_mapping_path = "data/channel_mapping.csv"
+ads_path = "data/ad_region_metadata.json"
 
 channel_mapping = pd.read_csv(channel_mapping_path)
 
@@ -41,6 +42,8 @@ with open(codebook_path, "r") as f:
 data = json.load(open(data_path))
 data = process_data_json(data)
 print(f"Loaded {len(data)} posts")
+
+ads_data = pd.read_json(ads_path)
 
 # Initialize Dash app
 app = dash.Dash(
@@ -95,7 +98,7 @@ app.layout = html.Div([
 # Register callbacks
 register_filter_callbacks(app, data)
 register_navigation_callbacks(app)
-register_content_callbacks(app, data, codebook, green_brown_colors, classification_labels)
+register_content_callbacks(app, data, ads_data, codebook, green_brown_colors, classification_labels)
 
 # ---------- Junkipedia proxy (persistent + conditional cache + highlighter) ----------
 

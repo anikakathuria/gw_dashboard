@@ -133,67 +133,111 @@ def plot_labels(proportions, color_scheme, y_max):
 
     return fig
 
+def _build_green_brown_counts(df):
+    # Desired bottom -> top (also legend) order
+    desired_order = ['Miscellaneous', 'Only Fossil', 'Green+Fossil', 'Only Green']
 
-def plot_green_brown(df, color_scheme):
-    import plotly.express as px
+    counts = df['green_brown'].value_counts().reset_index()
+    counts.columns = ['green_brown', 'n']
+    counts['share'] = counts['n'] / counts['n'].sum()
 
-    # Prepare the data
-    green_brown_counts = df['green_brown'].value_counts().reset_index()
-    green_brown_counts.columns = ['green_brown', 'n']
-    green_brown_counts['share'] = green_brown_counts['n'] / green_brown_counts['n'].sum()
-    # Map categories to nice labels
+    # Map to display labels
     category_labels = {
         'green': 'Only Green',
         'brown': 'Only Fossil',
         'misc': 'Miscellaneous',
         'green_brown': 'Green+Fossil'
     }
-    green_brown_counts['green_brown'] = green_brown_counts['green_brown'].map(category_labels)
-    green_brown_counts['label'] = green_brown_counts['green_brown'] + ' (' + (green_brown_counts['share'] * 100).round().astype(int).astype(str) + '%)'
+    counts['green_brown'] = counts['green_brown'].map(category_labels)
 
-    # Set the same x value for all rows (to get one bar)
-    green_brown_counts['category'] = 'All Posts'
+    # Ensure all categories exist and are ordered
+    counts = (
+        counts.set_index('green_brown')
+              .reindex(desired_order, fill_value=0)
+              .reset_index()
+    )
 
-    # Map to custom colors
+    # Single x value (for stacked bar)
+    counts['category'] = 'All Posts'
+
+    # Text labels for inside-text / hover
+    counts['label'] = (
+        counts['green_brown'] + ' (' +
+        (counts['share'] * 100).round().astype(int).astype(str) + '%)'
+    )
+    return counts
+
+def plot_green_brown_pie(df, color_scheme):
+    # Reuse your shared prep (keeps the fixed order)
+    counts = _build_green_brown_counts(df)
+
+    # Labels in display order + raw counts for percentages
+    labels = counts['green_brown'].tolist()
+    values = counts['n'].astype(float).tolist()
+
+    # Colors mapped to your scheme
     color_discrete_map = {
-        'Only Green': color_scheme['green'],
-        'Only Fossil': color_scheme['brown'],
+        'Only Green':    color_scheme['green'],
+        'Green+Fossil':  color_scheme['green_brown'],
+        'Only Fossil':   color_scheme['brown'],
         'Miscellaneous': color_scheme['misc'],
-        'Green+Fossil': color_scheme['green_brown']
+    }
+    colors = [color_discrete_map[lbl] for lbl in labels]
+
+    fig = go.Figure(data=[
+        go.Pie(
+            labels=labels,
+            values=values,
+            sort=False,                 # keep our desired order
+            direction='clockwise',
+            textinfo='percent+label',
+            hovertemplate='%{label}: %{percent}<extra></extra>'
+        )
+    ])
+    fig.update_traces(marker=dict(colors=colors))
+    fig.update_layout(title='Totals', showlegend=True, legend=dict(traceorder='normal'))
+    return fig
+
+
+def plot_green_brown(df, color_scheme):
+    counts = _build_green_brown_counts(df)
+
+    color_discrete_map = {
+        'Only Green':    color_scheme['green'],
+        'Green+Fossil':  color_scheme['green_brown'],
+        'Only Fossil':   color_scheme['brown'],
+        'Miscellaneous': color_scheme['misc']
     }
 
-    # Plot single stacked bar
     fig = px.bar(
-        green_brown_counts,
+        counts,
         x='category',
         y='share',
         color='green_brown',
         text='label',
         color_discrete_map=color_discrete_map,
-        custom_data=['green_brown']
+        custom_data=['green_brown'],
+        category_orders={'green_brown': list(counts['green_brown'])}  # preserves order
     )
 
     fig.update_layout(
         barmode='stack',
-        yaxis=dict(
-            title='Proportion',
-            tickformat='.0%',
-            range=[0, 1]
-        ),
+        yaxis=dict(title='Proportion', tickformat='.0%', range=[0, 1]),
         xaxis_title='',
         title='Totals',
-        showlegend=True
+        showlegend=True,
+        legend_traceorder="normal"
     )
-
     fig.update_traces(
         textposition='inside',
         hovertemplate='%{customdata[0]}: %{y:.0%}<extra></extra>',
     )
-
     return fig
 
 
-def plot_overview(labeled_data, codebook, color_scheme):
+
+
+def plot_overview(labeled_data, codebook, color_scheme, totals_chart_type='pie'):
     import math
 
     # tiny helper to choose black/white text based on bg color
@@ -201,14 +245,15 @@ def plot_overview(labeled_data, codebook, color_scheme):
         try:
             h = bg_hex.lstrip('#')
             r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
-            # relative luminance
             luminance = (0.2126 * (r/255) + 0.7152 * (g/255) + 0.0722 * (b/255))
             return "black" if luminance > 0.6 else "white"
         except Exception:
             return default
 
-    total_posts = len(labeled_data)-1
-    
+    total_posts = len(labeled_data) - 1
+
+    # Ensure green_brown exists for totals pane (pie or stacked bar)
+    labeled_data = labeled_data.copy()
     labeled_data['green_brown'] = labeled_data.apply(
         lambda row: 'green_brown' if row['green'] and row['fossil_fuel']
         else 'green' if row['green']
@@ -216,15 +261,14 @@ def plot_overview(labeled_data, codebook, color_scheme):
         else 'misc',
         axis=1
     )
-    
+
     label_proportions = prepare_proportions(labeled_data, codebook)
-    
     green_proportions = label_proportions[label_proportions['super_category'] == 'Green']
     brown_proportions = label_proportions[label_proportions['super_category'] == 'Fossil']
-    
+
     max_n = max(green_proportions['n'].max(), brown_proportions['n'].max())
     y_max = int(max_n * 1.1)
-    
+
     # Build a compatible map for plot_labels (expects "Green"/"Fossil"/"Other")
     super_color_map = {
         "Green":  color_scheme.get("Green",  color_scheme.get("green",  "#45a776")),
@@ -232,48 +276,73 @@ def plot_overview(labeled_data, codebook, color_scheme):
         "Other":  color_scheme.get("Other",  color_scheme.get("misc",   "#9e9e9e")),
     }
 
+    # Decide totals viz type (pie default)
+    totals_is_pie = (str(totals_chart_type).lower() == 'pie')
+
+    # Build sub-figures
     green_plot = plot_labels(green_proportions, super_color_map, y_max)
     brown_plot = plot_labels(brown_proportions, super_color_map, y_max)
-    green_brown_plot = plot_green_brown(labeled_data, color_scheme)
-    
-    # Combine the plots using make_subplots (keep visible titles)
+    if totals_is_pie:
+        totals_fig = plot_green_brown_pie(labeled_data, color_scheme)
+        first_spec = {"type": "domain"}   # pie needs a domain subplot
+    else:
+        totals_fig = plot_green_brown(labeled_data, color_scheme)
+        first_spec = {"type": "xy"}       # stacked bar is an xy subplot
+
+    # Combine using make_subplots
     fig = make_subplots(
         rows=1, cols=3,
         subplot_titles=("Total Proportions", "All Green Posts", "All Fossil Posts"),
-        column_widths=[0.33, 0.33, 0.33]
+        column_widths=[0.33, 0.33, 0.33],
+        specs=[[first_spec, {"type": "xy"}, {"type": "xy"}]]
     )
-    
-    for trace in green_brown_plot['data']:
+
+    for trace in totals_fig['data']:
         fig.add_trace(trace, row=1, col=1)
     for trace in green_plot['data']:
         fig.add_trace(trace, row=1, col=2)
     for trace in brown_plot['data']:
         fig.add_trace(trace, row=1, col=3)
-    
-    fig.update_layout(hovermode='x unified')  # keep one tooltip
-    fig.update_xaxes(showspikes=False)        # hide the vertical line
+
+    # Layout
+    fig.update_layout(hovermode='x unified')
+    fig.update_xaxes(showspikes=False)
     fig.update_layout(height=600, showlegend=False, barmode='stack')
     fig.update_yaxes(range=[0, y_max], row=1, col=2)
     fig.update_yaxes(range=[0, y_max], row=1, col=3)
-    fig.update_yaxes(showticklabels=False, title='', row=1, col=1)
+    if not totals_is_pie:
+        fig.update_yaxes(showticklabels=False, title='', row=1, col=1)
 
-    # ---------------- NEW: Hover tooltips for titles with scheme colors ----------------
+    # --- Title hover tooltips (copying your styling, dynamic text for totals) ---
     green_bg  = super_color_map["Green"]
     brown_bg  = super_color_map["Fossil"]
     green_txt = _auto_font_color(green_bg)
     brown_txt = _auto_font_color(brown_bg)
 
+    totals_desc = (
+        "Pie chart showing the fraction of posts labelled by CLAIMS as Only Green, <br>"
+        "Only Fossil, Green+Fossil, or Miscellaneous."
+        if totals_is_pie else
+        "Stacked bar chart showing the fraction of posts labelled by CLAIMS as <br>"
+        "Only Green, Only Fossil, Green+Fossil, or Miscellaneous."
+    )
     title_tooltips = {
         "Total Proportions": {
-            "text": "Stacked bar chart showing the fraction of posts labelled by CLAIMS as Only Green, <br> Only Fossil, Green+Fossil, or Miscellaneous.",
-            "style": dict(bgcolor="white", font_size=12, font_color="black")  # keep neutral
+            "text": totals_desc,
+            "style": dict(bgcolor="white", font_size=12, font_color="black")
         },
         "All Green Posts": {
-            "text": "Bar chart showing the number of posts by Green subcategory, as labelled by CLAIMS: Emissions Reduction, <br> False Solutions, Other Green, Recycling/Waste Management, and Low-Carbon Technologies. <br> Posts assigned both Fossil Fuel and Green labels by CLAIMS indicate efforts to greenwash messaging <br> about fossil fuels, and are therefore included in this bar chart.",
+            "text": "Bar chart showing the number of posts by Green subcategory, as labelled by CLAIMS: <br>"
+                    "Emissions Reduction, False Solutions, Other Green, Recycling/Waste Management, <br>"
+                    "and Low-Carbon Technologies. Posts assigned both Fossil Fuel and Green labels by <br>"
+                    "CLAIMS indicate efforts to greenwash messaging about fossil fuels, and are therefore <br>"
+                    "included in this bar chart.",
             "style": dict(bgcolor=green_bg, font_size=12, font_color=green_txt)
         },
         "All Fossil Posts": {
-            "text": "Bar chart showing the number of posts by Fossil Fuel subcategory, <br> as labelled by CLAIMS: Primary Product, Petrochemical Product, Other Fossil Fuel, <br> and Infrastructure & Production.",
+            "text": "Bar chart showing the number of posts by Fossil Fuel subcategory, as labelled by <br>"
+                    "CLAIMS: Primary Product, Petrochemical Product, Other Fossil Fuel, and <br>"
+                    "Infrastructure & Production.",
             "style": dict(bgcolor=brown_bg, font_size=12, font_color=brown_txt)
         }
     }
@@ -290,13 +359,13 @@ def plot_overview(labeled_data, codebook, color_scheme):
             new_annotations.append(a)
         fig.update_layout(annotations=new_annotations)
 
-    # (optional) keep unified hover on traces
     fig.update_layout(
         hovermode='x unified',
         hoverlabel=dict(bgcolor="white", font_size=13, font_color="black")
     )
-    
+
     return fig
+
 
 
 '''

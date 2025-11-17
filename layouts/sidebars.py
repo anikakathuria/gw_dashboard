@@ -381,6 +381,33 @@ def create_sidebars(data):
             ),
         ], id="analytics_entity_filter_container", style={"display": "none"}),
 
+        html.Label("Totals chart", style={"font-weight": "500", "margin-bottom": "8px"}),
+        dcc.RadioItems(
+            id="totals_chart_type",
+            options=[
+                {"label": "Pie", "value": "pie"},
+                {"label": "Stacked bar", "value": "bar"},
+            ],
+            value="pie",  # default
+            inline=True,
+            inputStyle={"marginRight": "6px"},
+            labelStyle={"marginRight": "16px"},
+            style={"margin-bottom": "20px"}
+        ),
+
+        html.Label("Ads Map Metric", style={"font-weight": "500", "margin-bottom": "8px", "margin-top": "12px"}),
+        dcc.Dropdown(
+            id="analytics_map_metric",
+            options=[
+                {"label": "Impressions (median sum)", "value": "impressions"},
+                {"label": "Spend (median sum)", "value": "spend"},
+                {"label": "Impressions per Dollar", "value": "impressions_per_dollar"},
+            ],
+            value="impressions",        # default
+            clearable=False,
+            style={"margin-bottom": "20px"},
+        ),
+
         html.Label("Message Type", style={"font-weight": "500", "margin-bottom": "8px"}),
         dcc.RadioItems(
             id="analytics_uniqueness_toggle",
