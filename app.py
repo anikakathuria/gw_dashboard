@@ -3,6 +3,7 @@ from dash import dcc, html
 import pandas as pd
 import json
 import pathlib
+from pathlib import Path
 import time
 import requests
 from flask import Response, request, redirect, session, url_for
@@ -12,6 +13,10 @@ import os
 from functools import wraps
 
 from bs4 import BeautifulSoup
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Import layouts
 from layouts.sidebars import create_sidebars
