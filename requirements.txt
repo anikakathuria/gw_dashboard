@@ -1,5 +1,4 @@
 beautifulsoup4==4.13.4
-conda==4.3.16
 dash==2.18.2
 dash-bootstrap-components==1.7.1
 dash-core-components==2.0.0
@@ -9,3 +8,7 @@ Flask==3.0.3
 numpy==2.0.2
 pandas==2.2.3
 plotly==6.0.0
+authlib
+gunicorn
+requests
+lxml

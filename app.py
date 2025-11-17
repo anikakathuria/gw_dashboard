@@ -5,7 +5,12 @@ import json
 import pathlib
 import time
 import requests
-from flask import Response, request
+from flask import Response, request, redirect, session, url_for
+from authlib.integrations.flask_client import OAuth
+from werkzeug.middleware.proxy_fix import ProxyFix
+import os
+from functools import wraps
+
 from bs4 import BeautifulSoup
 
 # Import layouts
@@ -53,6 +58,88 @@ app = dash.Dash(
         "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
     ]
 )
+
+# === Flask server & Auth0 config ===
+server = app.server  # underlying Flask app
+server.secret_key = os.getenv("FLASK_SECRET_KEY", "dev-secret-change-me")
+
+# Fix proxy headers when running behind Render's proxy
+server.wsgi_app = ProxyFix(server.wsgi_app, x_proto=1, x_host=1)
+
+AUTH0_CLIENT_ID = os.environ.get("AUTH0_CLIENT_ID")
+AUTH0_CLIENT_SECRET = os.environ.get("AUTH0_CLIENT_SECRET")
+AUTH0_DOMAIN = os.environ.get("AUTH0_DOMAIN")  # e.g. "your-tenant.eu.auth0.com"
+AUTH0_BASE_URL = f"https://{AUTH0_DOMAIN}"
+AUTH0_CALLBACK_URL = os.environ.get("AUTH0_CALLBACK_URL")  # we'll set on Render
+
+oauth = OAuth(server)
+auth0 = oauth.register(
+    "auth0",
+    client_id=AUTH0_CLIENT_ID,
+    client_secret=AUTH0_CLIENT_SECRET,
+    client_kwargs={"scope": "openid profile email"},
+    server_metadata_url=f"{AUTH0_BASE_URL}/.well-known/openid-configuration",
+)
+
+
+def requires_auth(f):
+    """Decorator to require login on specific routes."""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if "user" not in session:
+            return redirect(url_for("login", next=request.path))
+        return f(*args, **kwargs)
+    return decorated
+
+
+@server.route("/login")
+def login():
+    redirect_uri = url_for("auth_callback", _external=True)
+    return auth0.authorize_redirect(redirect_uri=redirect_uri)
+
+
+@server.route("/callback")
+def auth_callback():
+    token = auth0.authorize_access_token()
+    userinfo = token.get("userinfo", {})
+    # store minimal user info in session
+    session["user"] = {
+        "sub": userinfo.get("sub"),
+        "email": userinfo.get("email"),
+        "name": userinfo.get("name"),
+    }
+    next_url = request.args.get("next") or "/"
+    return redirect(next_url)
+
+
+@server.route("/logout")
+def logout():
+    session.clear()
+    # send the user back to the app after logging out of Auth0
+    return redirect(
+        f"{AUTH0_BASE_URL}/v2/logout"
+        f"?returnTo={url_for('login', _external=True)}"
+        f"&client_id={AUTH0_CLIENT_ID}"
+    )
+
+
+@server.before_request
+def require_login_for_all_routes():
+    """
+    Force login for everything except:
+      - /login
+      - /callback
+      - static assets
+      - favicon
+    Dash routes (/, /_dash-*, etc.) will be protected because they go through here.
+    """
+    open_paths = ("/login", "/callback", "/favicon.ico")
+    if request.path in open_paths or request.path.startswith("/static"):
+        return
+    # If user not logged in, redirect to /login with ?next=...
+    if "user" not in session:
+        return redirect(url_for("login", next=request.path))
+
 
 # Custom CSS - Load from external file
 with open('styles/custom.css', 'r') as f:
