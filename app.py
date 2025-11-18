@@ -4,13 +4,16 @@ import pandas as pd
 import json
 import pathlib
 from pathlib import Path
+import os
 import time
 import requests
 from flask import Response, request, redirect, session, url_for
 from authlib.integrations.flask_client import OAuth
 from werkzeug.middleware.proxy_fix import ProxyFix
-import os
 from functools import wraps
+import boto3
+import io
+from botocore.config import Config
 
 from bs4 import BeautifulSoup
 
@@ -31,6 +34,30 @@ from callbacks.content import register_content_callbacks
 # Import data processing
 from process_data import process_data_json
 
+def load_json_local_or_s3(local_path, key):
+    p = Path(local_path)
+    if p.exists():
+        return json.loads(p.read_text())
+    if not s3_client:
+        raise RuntimeError(f"Missing local file {local_path} and S3 not configured")
+    obj = s3_client.get_object(Bucket=S3_BUCKET_NAME, Key=key)
+    return json.loads(obj["Body"].read())
+
+def load_csv_local_or_s3(local_path, key):
+    p = Path(local_path)
+    if p.exists():
+        return pd.read_csv(p)
+    obj = s3_client.get_object(Bucket=S3_BUCKET_NAME, Key=key)
+    return pd.read_csv(io.BytesIO(obj["Body"].read()))
+
+def load_df_json_local_or_s3(local_path, key):
+    p = Path(local_path)
+    if p.exists():
+        return pd.read_json(p)
+    obj = s3_client.get_object(Bucket=S3_BUCKET_NAME, Key=key)
+    return pd.read_json(io.BytesIO(obj["Body"].read()))
+
+
 """
     This code sets up the dashboard, combining the layout, callbacks, and data processing.
     It also includes a proxy for retrieving Junkipedia's post html embeddings and displaying within the dashboard.
@@ -38,22 +65,24 @@ from process_data import process_data_json
 """
 
 # Load data
-codebook_path = "data/codebook.json"
-data_path = "data/junkipedia_50k_dashboard_ready.json"
-channel_mapping_path = "data/channel_mapping.csv"
-ads_path = "data/ad_region_metadata.json"
+codebook = load_json_local_or_s3("data/codebook.json", "codebook.json")
 
-channel_mapping = pd.read_csv(channel_mapping_path)
+raw_data = load_json_local_or_s3(
+    "data/junkipedia_50k_dashboard_ready.json",
+    "junkipedia_50k_dashboard_ready.json"
+)
+data = process_data_json(raw_data)
 
-# Load codebook
-with open(codebook_path, "r") as f:
-    codebook = json.load(f)
+channel_mapping = load_csv_local_or_s3(
+    "data/channel_mapping.csv",
+    "channel_mapping.csv"
+)
 
-data = json.load(open(data_path))
-data = process_data_json(data)
-print(f"Loaded {len(data)} posts")
+ads_data = load_df_json_local_or_s3(
+    "data/ad_region_metadata.json",
+    "ad_region_metadata.json"
+)
 
-ads_data = pd.read_json(ads_path)
 
 # Initialize Dash app
 app = dash.Dash(
@@ -86,6 +115,21 @@ auth0 = oauth.register(
     server_metadata_url=f"{AUTH0_BASE_URL}/.well-known/openid-configuration",
 )
 
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
+S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
+
+if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY and S3_BUCKET_NAME:
+    s3_client = boto3.client(
+        "s3",
+        aws_access_key_id=AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+        region_name=AWS_REGION,
+        config=Config(retries={"max_attempts": 3, "mode": "standard"}),
+    )
+else:
+    s3_client = None
 
 def requires_auth(f):
     """Decorator to require login on specific routes."""

@@ -13,3 +13,5 @@ authlib
 gunicorn
 requests
 lxml
+boto3
+botocore
