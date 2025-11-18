@@ -34,6 +34,32 @@ from callbacks.content import register_content_callbacks
 # Import data processing
 from process_data import process_data_json
 
+"""
+    This code sets up the dashboard, combining the layout, callbacks, and data processing.
+    It also includes a proxy for retrieving Junkipedia's post html embeddings and displaying within the dashboard.
+    The app is built using Dash, and custom CSS is located in styles/custom.css.
+"""
+
+
+# AWS / S3 CONFIG 
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
+S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
+
+if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY and S3_BUCKET_NAME:
+    s3_client = boto3.client(
+        "s3",
+        aws_access_key_id=AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+        region_name=AWS_REGION,
+        config=Config(retries={"max_attempts": 3, "mode": "standard"}),
+    )
+else:
+    s3_client = None
+
+
+#Helpers
 def load_json_local_or_s3(local_path, key):
     p = Path(local_path)
     if p.exists():
@@ -57,12 +83,6 @@ def load_df_json_local_or_s3(local_path, key):
     obj = s3_client.get_object(Bucket=S3_BUCKET_NAME, Key=key)
     return pd.read_json(io.BytesIO(obj["Body"].read()))
 
-
-"""
-    This code sets up the dashboard, combining the layout, callbacks, and data processing.
-    It also includes a proxy for retrieving Junkipedia's post html embeddings and displaying within the dashboard.
-    The app is built using Dash, and custom CSS is located in styles/custom.css.
-"""
 
 # Load data
 codebook = load_json_local_or_s3("data/codebook.json", "codebook.json")
@@ -114,22 +134,6 @@ auth0 = oauth.register(
     client_kwargs={"scope": "openid profile email"},
     server_metadata_url=f"{AUTH0_BASE_URL}/.well-known/openid-configuration",
 )
-
-AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
-AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
-S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
-
-if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY and S3_BUCKET_NAME:
-    s3_client = boto3.client(
-        "s3",
-        aws_access_key_id=AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-        region_name=AWS_REGION,
-        config=Config(retries={"max_attempts": 3, "mode": "standard"}),
-    )
-else:
-    s3_client = None
 
 def requires_auth(f):
     """Decorator to require login on specific routes."""
