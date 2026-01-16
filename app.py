@@ -7,6 +7,8 @@ from pathlib import Path
 import os
 import time
 import requests
+from threading import Thread
+import psutil
 from flask import Response, request, redirect, session, url_for
 from authlib.integrations.flask_client import OAuth
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -103,6 +105,15 @@ ads_data = load_df_json_local_or_s3(
     "ad_region_metadata.json"
 )
 
+def log_memory_usage():
+    process = psutil.Process(os.getpid())
+    while True:
+        mem_mb = process.memory_info().rss / (1024 * 1024)
+        print(f"[MEMORY] {mem_mb:.2f} MB")
+        time.sleep(5)
+
+# Start memory logging in a background thread (daemon so it doesn't block shutdown)
+Thread(target=log_memory_usage, daemon=True).start()
 
 # Initialize Dash app
 app = dash.Dash(
