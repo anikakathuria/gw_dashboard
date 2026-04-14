@@ -18,14 +18,13 @@ classification_labels = {
     "misc": "Miscellaneous"
 }
 
-# Define the banner component of the dashboard
 banner = html.Div([
     html.Div([
         # LOGO
         html.Img(
-            src="/assets/cal_logo_3_transparent.png",   # put logo.png inside the "assets" folder
+            src="/assets/cal_logo_3_transparent.png",
             style={
-                "height": "60px",    # adjust size
+                "height": "60px",
                 "margin-right": "16px"
             }
         ),
@@ -62,24 +61,43 @@ banner = html.Div([
             })
         ], style={"display": "flex", "align-items": "center"}),
 
-        # RIGHT: tabs now live in the banner
-        dcc.Tabs(
-            id="tabs",
-            value="social_media",
-            parent_className="tabs-on-banner",
-            className="tabs-on-banner-inner",
-            children=[
-                dcc.Tab(label="Post Feed", value="social_media"),
-                dcc.Tab(label="Analytics", value="analytics"),
-                dcc.Tab(label="About", value="about"),
-            ],
-        )
+        # RIGHT: tabs + logout
+        html.Div([
+            dcc.Tabs(
+                id="tabs",
+                value="social_media",
+                parent_className="tabs-on-banner",
+                className="tabs-on-banner-inner",
+                children=[
+                    dcc.Tab(label="Post Feed", value="social_media"),
+                    dcc.Tab(label="Analytics", value="analytics"),
+                    dcc.Tab(label="About", value="about"),
+                ],
+            ),
+            html.A(
+                "Log out",
+                href="/logout",
+                style={
+                    "margin-left": "20px",
+                    "text-decoration": "none",
+                    "color": "#383838",
+                    "font-weight": "500",
+                    "padding": "8px 12px",
+                    "border": "1px solid #383838",
+                    "border-radius": "6px",
+                    "background-color": "#ffffff"
+                }
+            )
+        ], style={
+            "display": "flex",
+            "align-items": "center"
+        })
     ], className="banner", style={
         "display": "flex",
         "align-items": "center",
         "justify-content": "space-between",
         "height": "auto",
-        "background-color": "#f5f5f5",  
+        "background-color": "#f5f5f5",
         "padding": "0 20px"
     })
 

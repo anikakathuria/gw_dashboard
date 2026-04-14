@@ -1,3 +1,7 @@
 data/ad_region_metadata.json
 data/junkipedia_50k_dashboard_ready.json
 .env
+
+layouts/__pycache__
+callbacks/__pycache__
+__pycache__
